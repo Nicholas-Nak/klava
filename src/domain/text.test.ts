@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { addPunctuation, sampleWords } from './text';
+import { addNumbers, addPunctuation, sampleWords } from './text';
 
 describe('sampleWords', () => {
   it('returns the requested number of words without changing the source', () => {
@@ -110,5 +110,64 @@ describe('addPunctuation', () => {
 
   it('returns an empty list for empty text', () => {
     expect(addPunctuation([])).toEqual([]);
+  });
+});
+
+describe('addNumbers', () => {
+  it('adds a number even to short text without changing its length', () => {
+    const words = Object.freeze(['one', 'two', 'three']);
+    const result = addNumbers(words, () => 0.5);
+
+    expect(result).toEqual(['one', '550', 'three']);
+    expect(words).toEqual(['one', 'two', 'three']);
+  });
+
+  it('leaves most words intact in longer text', () => {
+    const words = Array.from({ length: 25 }, () => 'word');
+    const result = addNumbers(words, () => 0);
+
+    expect(result).toHaveLength(25);
+    expect(result.filter((word) => /^\d+$/.test(word))).toHaveLength(4);
+    expect(result.filter((word) => word === 'word')).toHaveLength(21);
+  });
+
+  it.each([
+    [0, '0'],
+    [0.25, '32'],
+    [0.5, '550'],
+    [0.9999, '9999'],
+  ] as const)(
+    'generates integers without leading zeroes for %s',
+    (value, number) => {
+      expect(addNumbers(['word'], () => value)).toEqual([number]);
+    },
+  );
+
+  it('can replace the last word in a block', () => {
+    const words = [
+      'one',
+      'two',
+      'three',
+      'four',
+      'five',
+      'six',
+      'seven',
+      'eight',
+    ];
+
+    expect(addNumbers(words, () => 0.9999)).toEqual([
+      'one',
+      'two',
+      'three',
+      'four',
+      'five',
+      'six',
+      'seven',
+      '9999',
+    ]);
+  });
+
+  it('returns an empty list for empty text', () => {
+    expect(addNumbers([])).toEqual([]);
   });
 });

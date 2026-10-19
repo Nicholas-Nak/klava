@@ -58,3 +58,22 @@ export function addPunctuation(
     return result;
   });
 }
+
+export function addNumbers(
+  words: readonly string[],
+  random = Math.random,
+): string[] {
+  const result = [...words];
+  const spacing = 8;
+
+  for (let start = 0; start < result.length; start += spacing) {
+    const blockLength = Math.min(spacing, result.length - start);
+    const index = start + Math.floor(random() * blockLength);
+    const digits = 1 + Math.floor(random() * 4);
+    const min = digits === 1 ? 0 : 10 ** (digits - 1);
+    const max = 10 ** digits - 1;
+    result[index] = String(min + Math.floor(random() * (max - min + 1)));
+  }
+
+  return result;
+}
