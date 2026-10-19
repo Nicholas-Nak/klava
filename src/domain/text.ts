@@ -32,3 +32,29 @@ export function sampleWords(
 
   return selected;
 }
+
+export function addPunctuation(
+  words: readonly string[],
+  random = Math.random,
+): string[] {
+  let remaining = 0;
+
+  return words.map((word, index) => {
+    const startsSentence = remaining === 0;
+    if (startsSentence) remaining = 5 + Math.floor(random() * 6);
+
+    let result = startsSentence
+      ? word.charAt(0).toUpperCase() + word.slice(1)
+      : word;
+    remaining--;
+
+    if (remaining === 0 || index === words.length - 1) {
+      remaining = 0;
+      const mark = random();
+      return result + (mark < 0.8 ? '.' : mark < 0.95 ? '?' : '!');
+    }
+
+    if (!startsSentence && remaining > 1 && random() < 0.12) result += ',';
+    return result;
+  });
+}

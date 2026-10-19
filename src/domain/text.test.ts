@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { sampleWords } from './text';
+import { addPunctuation, sampleWords } from './text';
 
 describe('sampleWords', () => {
   it('returns the requested number of words without changing the source', () => {
@@ -66,5 +66,49 @@ describe('sampleWords', () => {
     expect(() => sampleWords(['one', 'two'], 1, () => value)).toThrow(
       RangeError,
     );
+  });
+});
+
+describe('addPunctuation', () => {
+  it('starts a new sentence with a capital and closes the last sentence', () => {
+    const words = Object.freeze(['one', 'two', 'three', 'four', 'five', 'six']);
+
+    expect(addPunctuation(words, () => 0)).toEqual([
+      'One',
+      'two,',
+      'three,',
+      'four',
+      'five.',
+      'Six.',
+    ]);
+    expect(words).toEqual(['one', 'two', 'three', 'four', 'five', 'six']);
+  });
+
+  it('preserves Ukrainian letters and internal apostrophes', () => {
+    expect(
+      addPunctuation(['ґанок', 'сім’я', "ім'я", 'їжак', 'єнот'], () => 0.5),
+    ).toEqual(['Ґанок', 'сім’я', "ім'я", 'їжак', 'єнот.']);
+  });
+
+  it.each([
+    ['.', 0.5],
+    ['?', 0.9],
+    ['!', 0.99],
+  ] as const)('supports %s at the end of a sentence', (mark, value) => {
+    expect(addPunctuation(['hello'], () => value)).toEqual([`Hello${mark}`]);
+  });
+
+  it('keeps the word count and word order', () => {
+    const words = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
+    const result = addPunctuation(words, () => 0.5);
+
+    expect(result).toHaveLength(words.length);
+    expect(
+      result.map((word) => word.replace(/[,.?!]/g, '').toLowerCase()),
+    ).toEqual(words);
+  });
+
+  it('returns an empty list for empty text', () => {
+    expect(addPunctuation([])).toEqual([]);
   });
 });
