@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { addNumbers, addPunctuation, sampleWords } from './text';
+import ukrainian from '../data/uk.json';
+import english from '../data/en.json';
+import { addNumbers, addPunctuation, generateText, sampleWords } from './text';
 
 describe('sampleWords', () => {
   it('returns the requested number of words without changing the source', () => {
@@ -169,5 +171,70 @@ describe('addNumbers', () => {
 
   it('returns an empty list for empty text', () => {
     expect(addNumbers([])).toEqual([]);
+  });
+});
+
+describe.each(['uk', 'en'] as const)('generateText (%s)', (language) => {
+  const dictionary = language === 'uk' ? ukrainian : english;
+
+  it.each([10, 25, 50, 100])(
+    'selects %i words from the chosen language',
+    (count) => {
+      const options = Object.freeze({
+        language,
+        punctuation: false,
+        numbers: false,
+      });
+      const result = generateText(count, options, () => 0.5);
+
+      expect(result).toHaveLength(count);
+      expect(result.every((word) => dictionary.includes(word))).toBe(true);
+      expect(
+        result.every(
+          (word, index) => index === 0 || word !== result[index - 1],
+        ),
+      ).toBe(true);
+    },
+  );
+
+  it.each([
+    { punctuation: false, numbers: false },
+    { punctuation: true, numbers: false },
+    { punctuation: false, numbers: true },
+    { punctuation: true, numbers: true },
+  ])(
+    'supports punctuation=$punctuation and numbers=$numbers independently',
+    (flags) => {
+      const result = generateText(25, { language, ...flags }, () => 0.5);
+      const text = result.join(' ');
+
+      expect(result).toHaveLength(25);
+      expect(/\d/.test(text)).toBe(flags.numbers);
+      expect(/[,.?!]/.test(text)).toBe(flags.punctuation);
+
+      for (const token of result) {
+        const word = token.replace(/[,.?!]/g, '').toLowerCase();
+        expect(
+          dictionary.includes(word) ||
+            (flags.numbers && /^\d{1,4}$/.test(word)),
+        ).toBe(true);
+      }
+    },
+  );
+
+  it('ends the text correctly when numbers and punctuation are both enabled', () => {
+    const result = generateText(
+      1,
+      { language, punctuation: true, numbers: true },
+      () => 0.5,
+    );
+
+    expect(result).toEqual(['550.']);
+  });
+
+  it('can return no words regardless of enabled options', () => {
+    expect(
+      generateText(0, { language, punctuation: true, numbers: true }),
+    ).toEqual([]);
   });
 });
