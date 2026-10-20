@@ -89,3 +89,22 @@ it('toggles numbers independently of punctuation and language', async () => {
   expect(passage).toHaveAttribute('lang', 'en');
   expect(screen.getByRole('checkbox', { name: 'Пунктуація' })).toBeChecked();
 });
+
+it.each([10, 25, 50, 100])(
+  'renders %i words and keeps that count when refreshing',
+  async (count) => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: String(count) }));
+    const passage = within(
+      screen.getByRole('region', { name: 'Текст для друку' }),
+    ).getByRole('paragraph');
+    const visibleText = passage.querySelector('[aria-hidden="true"]');
+
+    expect(visibleText?.textContent?.split(' ')).toHaveLength(count);
+
+    await user.click(screen.getByRole('button', { name: 'Інший текст' }));
+
+    expect(visibleText?.textContent?.split(' ')).toHaveLength(count);
+  },
+);

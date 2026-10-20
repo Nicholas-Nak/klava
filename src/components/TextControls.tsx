@@ -1,5 +1,5 @@
 import type { TextOptions } from '../types';
-import styles from './TextControls.module.css';
+import styles from './Controls.module.css';
 
 interface TextControlsProps {
   options: TextOptions;

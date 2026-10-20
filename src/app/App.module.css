@@ -38,6 +38,14 @@
   border-bottom: 1px solid var(--line);
 }
 
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
