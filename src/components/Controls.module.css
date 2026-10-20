@@ -26,14 +26,17 @@
 }
 
 .choice {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  min-width: 44px;
   min-height: 44px;
   padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 4px;
   font-size: 14px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -44,13 +47,14 @@
 }
 
 .choice input {
-  width: 14px;
-  height: 14px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
   margin: 0;
-  accent-color: var(--accent);
+  opacity: 0;
 }
 
-.choice:focus-within {
+.choice:has(input:focus-visible) {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
