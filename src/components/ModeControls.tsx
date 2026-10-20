@@ -1,14 +1,17 @@
-import type { TestMode, WordCount } from '../types';
+import type { TestMode, TimeLimit, WordCount } from '../types';
 import styles from './Controls.module.css';
 
 interface ModeControlsProps {
   mode: TestMode['type'];
   count: WordCount;
+  seconds: TimeLimit;
   onModeChange: (mode: TestMode['type']) => void;
   onCountChange: (count: WordCount) => void;
+  onSecondsChange: (seconds: TimeLimit) => void;
 }
 
 const wordCounts = [10, 25, 50, 100] as const;
+const timeLimits = [15, 30, 60, 120] as const;
 const modes = [
   { value: 'words', label: 'Слова' },
   { value: 'time', label: 'Час' },
@@ -17,8 +20,10 @@ const modes = [
 export function ModeControls({
   mode,
   count,
+  seconds,
   onModeChange,
   onCountChange,
+  onSecondsChange,
 }: ModeControlsProps) {
   return (
     <div className={styles.controls}>
@@ -39,7 +44,7 @@ export function ModeControls({
           ))}
         </div>
       </fieldset>
-      {mode === 'words' && (
+      {mode === 'words' ? (
         <fieldset className={styles.group}>
           <legend>Кількість слів</legend>
           <div className={styles.choices}>
@@ -53,6 +58,24 @@ export function ModeControls({
                   onChange={() => onCountChange(value)}
                 />
                 {value}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <fieldset className={styles.group}>
+          <legend>Тривалість</legend>
+          <div className={styles.choices}>
+            {timeLimits.map((value) => (
+              <label className={styles.choice} key={value}>
+                <input
+                  type="radio"
+                  name="time-limit"
+                  value={value}
+                  checked={seconds === value}
+                  onChange={() => onSecondsChange(value)}
+                />
+                {value} с
               </label>
             ))}
           </div>

@@ -131,3 +131,20 @@ it('remembers the word count when switching between words and time', async () =>
   expect(visibleText?.textContent?.split(' ')).toHaveLength(50);
   expect(passage).toHaveAttribute('lang', 'en');
 });
+
+it.each([15, 30, 60, 120])(
+  'remembers a %i second limit after changing modes',
+  async (seconds) => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: 'Час' }));
+    await user.click(screen.getByRole('radio', { name: `${seconds} с` }));
+    await user.click(screen.getByRole('radio', { name: 'Слова' }));
+
+    expect(screen.queryByRole('group', { name: 'Тривалість' })).toBeNull();
+
+    await user.click(screen.getByRole('radio', { name: 'Час' }));
+
+    expect(screen.getByRole('radio', { name: `${seconds} с` })).toBeChecked();
+  },
+);

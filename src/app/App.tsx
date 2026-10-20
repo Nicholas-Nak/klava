@@ -3,7 +3,7 @@ import { ModeControls } from '../components/ModeControls';
 import { Passage } from '../components/Passage';
 import { TextControls } from '../components/TextControls';
 import { generateText } from '../domain/text';
-import type { TestMode, TextOptions, WordCount } from '../types';
+import type { TestMode, TextOptions, TimeLimit, WordCount } from '../types';
 import styles from './App.module.css';
 
 const initialOptions: TextOptions = {
@@ -16,6 +16,7 @@ export function App() {
   const [options, setOptions] = useState(initialOptions);
   const [count, setCount] = useState<WordCount>(25);
   const [mode, setMode] = useState<TestMode['type']>('words');
+  const [seconds, setSeconds] = useState<TimeLimit>(30);
   const [words, setWords] = useState(() => generateText(25, initialOptions));
   const textLength = mode === 'words' ? count : 100;
 
@@ -38,6 +39,11 @@ export function App() {
     setWords(generateText(nextMode === 'words' ? count : 100, options));
   }
 
+  function updateSeconds(nextSeconds: TimeLimit) {
+    setSeconds(nextSeconds);
+    refreshText();
+  }
+
   return (
     <div className={styles.app}>
       <header className={styles.header}>
@@ -49,8 +55,10 @@ export function App() {
           <ModeControls
             mode={mode}
             count={count}
+            seconds={seconds}
             onModeChange={updateMode}
             onCountChange={updateCount}
+            onSecondsChange={updateSeconds}
           />
           <TextControls options={options} onChange={updateOptions} />
         </div>
