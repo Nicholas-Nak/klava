@@ -3,7 +3,7 @@ import { ModeControls } from '../components/ModeControls';
 import { Passage } from '../components/Passage';
 import { TextControls } from '../components/TextControls';
 import { generateText } from '../domain/text';
-import type { TextOptions, WordCount } from '../types';
+import type { TestMode, TextOptions, WordCount } from '../types';
 import styles from './App.module.css';
 
 const initialOptions: TextOptions = {
@@ -15,20 +15,27 @@ const initialOptions: TextOptions = {
 export function App() {
   const [options, setOptions] = useState(initialOptions);
   const [count, setCount] = useState<WordCount>(25);
+  const [mode, setMode] = useState<TestMode['type']>('words');
   const [words, setWords] = useState(() => generateText(25, initialOptions));
+  const textLength = mode === 'words' ? count : 100;
 
   function refreshText() {
-    setWords(generateText(count, options));
+    setWords(generateText(textLength, options));
   }
 
   function updateOptions(nextOptions: TextOptions) {
     setOptions(nextOptions);
-    setWords(generateText(count, nextOptions));
+    setWords(generateText(textLength, nextOptions));
   }
 
   function updateCount(nextCount: WordCount) {
     setCount(nextCount);
     setWords(generateText(nextCount, options));
+  }
+
+  function updateMode(nextMode: TestMode['type']) {
+    setMode(nextMode);
+    setWords(generateText(nextMode === 'words' ? count : 100, options));
   }
 
   return (
@@ -39,7 +46,12 @@ export function App() {
       </header>
       <main className={styles.workspace}>
         <div className={styles.toolbar}>
-          <ModeControls count={count} onCountChange={updateCount} />
+          <ModeControls
+            mode={mode}
+            count={count}
+            onModeChange={updateMode}
+            onCountChange={updateCount}
+          />
           <TextControls options={options} onChange={updateOptions} />
         </div>
         <section className={styles.textArea} aria-label="Текст для друку">

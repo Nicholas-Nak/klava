@@ -108,3 +108,26 @@ it.each([10, 25, 50, 100])(
     expect(visibleText?.textContent?.split(' ')).toHaveLength(count);
   },
 );
+
+it('remembers the word count when switching between words and time', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: '50' }));
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  const passage = within(
+    screen.getByRole('region', { name: 'Текст для друку' }),
+  ).getByRole('paragraph');
+  const visibleText = passage.querySelector('[aria-hidden="true"]');
+
+  expect(screen.queryByRole('group', { name: 'Кількість слів' })).toBeNull();
+  expect(visibleText?.textContent?.split(' ')).toHaveLength(100);
+
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+  expect(passage).toHaveAttribute('lang', 'en');
+  expect(visibleText?.textContent?.split(' ')).toHaveLength(100);
+
+  await user.click(screen.getByRole('radio', { name: 'Слова' }));
+  expect(screen.getByRole('radio', { name: '50' })).toBeChecked();
+  expect(visibleText?.textContent?.split(' ')).toHaveLength(50);
+  expect(passage).toHaveAttribute('lang', 'en');
+});
