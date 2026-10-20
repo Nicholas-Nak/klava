@@ -43,3 +43,25 @@ it('uses the selected language when changing and refreshing text', async () => {
   expect(passage).toHaveAttribute('lang', 'en');
   expect(passage.textContent).toMatch(/^[a-z ]+$/);
 });
+
+it('toggles punctuation without changing the selected language', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+  const punctuation = screen.getByRole('checkbox', { name: 'Пунктуація' });
+  const passage = within(
+    screen.getByRole('region', { name: 'Текст для друку' }),
+  ).getByRole('paragraph');
+
+  await user.click(punctuation);
+
+  expect(punctuation).toBeChecked();
+  expect(passage.textContent).toMatch(/[.!?]$/);
+  expect(passage).toHaveAttribute('lang', 'en');
+
+  await user.click(punctuation);
+
+  expect(punctuation).not.toBeChecked();
+  expect(passage.textContent).not.toMatch(/[,.!?]/);
+  expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
+});

@@ -33,6 +33,24 @@ export function TextControls({ options, onChange }: TextControlsProps) {
           ))}
         </div>
       </fieldset>
+      <fieldset className={styles.group}>
+        <legend>Додатково</legend>
+        <div className={styles.choices}>
+          <label className={styles.toggle}>
+            <input
+              type="checkbox"
+              checked={options.punctuation}
+              onChange={(event) =>
+                onChange({
+                  ...options,
+                  punctuation: event.currentTarget.checked,
+                })
+              }
+            />
+            Пунктуація
+          </label>
+        </div>
+      </fieldset>
     </div>
   );
 }
