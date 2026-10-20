@@ -24,3 +24,22 @@ it('creates a new passage and keeps focus on the refresh button', async () => {
   expect(passage.textContent).not.toBe(before);
   expect(button).toHaveFocus();
 });
+
+it('uses the selected language when changing and refreshing text', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+
+  const passage = within(
+    screen.getByRole('region', { name: 'Текст для друку' }),
+  ).getByRole('paragraph');
+  expect(passage).toHaveAttribute('lang', 'en');
+  expect(passage.textContent).toMatch(/^[a-z ]+$/);
+  expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
+
+  await user.click(screen.getByRole('button', { name: 'Інший текст' }));
+
+  expect(passage).toHaveAttribute('lang', 'en');
+  expect(passage.textContent).toMatch(/^[a-z ]+$/);
+});

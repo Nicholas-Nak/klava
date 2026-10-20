@@ -1,6 +1,6 @@
 import ukrainian from '../data/uk.json';
 import english from '../data/en.json';
-import type { TestOptions } from '../types';
+import type { TextOptions } from '../types';
 
 export function sampleWords(
   words: readonly string[],
@@ -84,7 +84,7 @@ export function addNumbers(
 
 export function generateText(
   count: number,
-  options: Omit<TestOptions, 'mode'>,
+  options: TextOptions,
   random = Math.random,
 ): string[] {
   const dictionary = options.language === 'uk' ? ukrainian : english;

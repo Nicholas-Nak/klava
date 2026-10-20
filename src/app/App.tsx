@@ -1,20 +1,27 @@
 import { useState } from 'react';
 import { Passage } from '../components/Passage';
+import { TextControls } from '../components/TextControls';
 import { generateText } from '../domain/text';
-import type { TestOptions } from '../types';
+import type { TextOptions } from '../types';
 import styles from './App.module.css';
 
-const initialOptions: Omit<TestOptions, 'mode'> = {
+const initialOptions: TextOptions = {
   language: 'uk',
   punctuation: false,
   numbers: false,
 };
 
 export function App() {
+  const [options, setOptions] = useState(initialOptions);
   const [words, setWords] = useState(() => generateText(25, initialOptions));
 
   function refreshText() {
-    setWords(generateText(25, initialOptions));
+    setWords(generateText(25, options));
+  }
+
+  function updateOptions(nextOptions: TextOptions) {
+    setOptions(nextOptions);
+    setWords(generateText(25, nextOptions));
   }
 
   return (
@@ -24,8 +31,9 @@ export function App() {
         <p className={styles.description}>Тренажер друку</p>
       </header>
       <main className={styles.workspace}>
+        <TextControls options={options} onChange={updateOptions} />
         <section className={styles.textArea} aria-label="Текст для друку">
-          <Passage words={words} language="uk" />
+          <Passage words={words} language={options.language} />
         </section>
         <div className={styles.actions}>
           <button
