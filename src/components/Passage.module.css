@@ -1,7 +1,7 @@
 .passage {
   margin: 0;
   font-family: var(--font-test);
-  font-size: 28px;
+  font-size: clamp(20px, 2.4vw, 28px);
   line-height: 1.8;
 }
 

@@ -2,7 +2,7 @@
   max-width: 1040px;
   min-height: 100svh;
   margin: 0 auto;
-  padding: 40px 32px;
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 3vw, 32px);
 }
 
 .header {
@@ -30,7 +30,7 @@
 }
 
 .workspace {
-  padding: 72px 0;
+  padding: clamp(32px, 6vw, 72px) 0;
 }
 
 .textArea {
