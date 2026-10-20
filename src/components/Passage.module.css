@@ -1,0 +1,16 @@
+.passage {
+  margin: 48px 0;
+  font-family: monospace;
+  font-size: 28px;
+  line-height: 1.8;
+}
+
+.accessibleText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
