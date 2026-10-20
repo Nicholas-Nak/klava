@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { Passage } from '../components/Passage';
 import { generateText } from '../domain/text';
+import type { TestOptions } from '../types';
 import styles from './App.module.css';
 
+const initialOptions: Omit<TestOptions, 'mode'> = {
+  language: 'uk',
+  punctuation: false,
+  numbers: false,
+};
+
 export function App() {
-  const [words] = useState(() =>
-    generateText(25, { language: 'uk', punctuation: false, numbers: false }),
-  );
+  const [words, setWords] = useState(() => generateText(25, initialOptions));
+
+  function refreshText() {
+    setWords(generateText(25, initialOptions));
+  }
 
   return (
     <div className={styles.app}>
@@ -18,6 +27,30 @@ export function App() {
         <section className={styles.textArea} aria-label="Текст для друку">
           <Passage words={words} language="uk" />
         </section>
+        <div className={styles.actions}>
+          <button
+            className={styles.refreshButton}
+            type="button"
+            onClick={refreshText}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M20 11a8 8 0 1 0-2.4 6M20 4v7h-7"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Інший текст
+          </button>
+        </div>
       </main>
     </div>
   );

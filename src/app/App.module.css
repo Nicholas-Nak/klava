@@ -37,3 +37,33 @@
   padding: 32px 0;
   border-bottom: 1px solid var(--line);
 }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+
+.refreshButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.refreshButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.refreshButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
