@@ -9,14 +9,16 @@ export function App() {
   );
 
   return (
-    <main className={styles.app}>
-      <h1>Klava</h1>
-      <p className={styles.description}>
-        Тренажер друку українською та англійською.
-      </p>
-      <section aria-label="Текст для друку">
-        <Passage words={words} language="uk" />
-      </section>
-    </main>
+    <div className={styles.app}>
+      <header className={styles.header}>
+        <h1 className={styles.brand}>Klava</h1>
+        <p className={styles.description}>Тренажер друку</p>
+      </header>
+      <main className={styles.workspace}>
+        <section className={styles.textArea} aria-label="Текст для друку">
+          <Passage words={words} language="uk" />
+        </section>
+      </main>
+    </div>
   );
 }
