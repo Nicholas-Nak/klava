@@ -49,6 +49,16 @@ export function TextControls({ options, onChange }: TextControlsProps) {
             />
             Пунктуація
           </label>
+          <label className={styles.toggle}>
+            <input
+              type="checkbox"
+              checked={options.numbers}
+              onChange={(event) =>
+                onChange({ ...options, numbers: event.currentTarget.checked })
+              }
+            />
+            Цифри
+          </label>
         </div>
       </fieldset>
     </div>

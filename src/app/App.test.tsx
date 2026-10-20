@@ -65,3 +65,27 @@ it('toggles punctuation without changing the selected language', async () => {
   expect(passage.textContent).not.toMatch(/[,.!?]/);
   expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
 });
+
+it('toggles numbers independently of punctuation and language', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+  await user.click(screen.getByRole('checkbox', { name: 'Пунктуація' }));
+  const numbers = screen.getByRole('checkbox', { name: 'Цифри' });
+  const passage = within(
+    screen.getByRole('region', { name: 'Текст для друку' }),
+  ).getByRole('paragraph');
+
+  await user.click(numbers);
+
+  expect(numbers).toBeChecked();
+  expect(passage.textContent).toMatch(/\d/);
+  expect(passage.textContent).toMatch(/[.!?]$/);
+
+  await user.click(numbers);
+
+  expect(passage.textContent).not.toMatch(/\d/);
+  expect(passage.textContent).toMatch(/[.!?]$/);
+  expect(passage).toHaveAttribute('lang', 'en');
+  expect(screen.getByRole('checkbox', { name: 'Пунктуація' })).toBeChecked();
+});
