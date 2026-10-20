@@ -1,7 +1,17 @@
 :root {
+  --paper: #f5f2e9;
+  --ink: #252a24;
+  --muted: #697164;
+  --line: #d9ddcf;
+  --accent: #b4412d;
+  --accent-soft: #f1ded5;
+  --font-test: 'JetBrains Mono', monospace;
+  --font-heading: 'Unbounded', sans-serif;
+
   font-family: system-ui, sans-serif;
-  color: #222;
-  background: #fafafa;
+  color: var(--ink);
+  background: var(--paper);
+  font-synthesis: none;
 }
 
 * {

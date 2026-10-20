@@ -1,6 +1,6 @@
 .passage {
   margin: 48px 0;
-  font-family: monospace;
+  font-family: var(--font-test);
   font-size: 28px;
   line-height: 1.8;
 }

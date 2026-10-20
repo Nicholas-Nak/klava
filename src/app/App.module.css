@@ -7,9 +7,12 @@
 .app h1 {
   margin: 0 0 16px;
   font-size: 28px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.06em;
 }
 
 .description {
-  color: #555;
+  color: var(--muted);
   line-height: 1.6;
 }
