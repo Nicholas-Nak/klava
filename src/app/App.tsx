@@ -19,12 +19,14 @@ export function App() {
   const [count, setCount] = useState<WordCount>(25);
   const [mode, setMode] = useState<TestMode['type']>('words');
   const [seconds, setSeconds] = useState<TimeLimit>(30);
+  const [focused, setFocused] = useState(false);
   const [test, dispatch] = useReducer(testReducer, undefined, () =>
     createTest(generateText(25, initialOptions), { type: 'words', count: 25 }),
   );
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
   const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  const focusMode = test.phase === 'running' && focused;
 
   useEffect(() => {
     if (test.phase === 'finished') {
@@ -88,12 +90,20 @@ export function App() {
 
   return (
     <div className={styles.app}>
-      <header className={styles.header}>
+      <header
+        className={[styles.header, focusMode ? styles.hidden : ''].join(' ')}
+        aria-hidden={focusMode}
+        inert={focusMode}
+      >
         <h1 className={styles.brand}>Klava</h1>
         <p className={styles.description}>Тренажер друку</p>
       </header>
       <main className={styles.workspace}>
-        <div className={styles.toolbar}>
+        <div
+          className={[styles.toolbar, focusMode ? styles.hidden : ''].join(' ')}
+          aria-hidden={focusMode}
+          inert={focusMode}
+        >
           <ModeControls
             mode={mode}
             count={count}
@@ -117,12 +127,19 @@ export function App() {
         <TypingArea
           test={test}
           language={options.language}
+          focused={focused}
+          onFocusChange={setFocused}
           onInput={(value) =>
             dispatch({ type: 'input', value, at: performance.now() })
           }
           onAdvance={() => dispatch({ type: 'advance', at: performance.now() })}
         />
-        <div className={styles.actions}>
+        <div
+          className={[
+            styles.actions,
+            focusMode ? styles.quietActions : '',
+          ].join(' ')}
+        >
           <button
             className={styles.refreshButton}
             type="button"

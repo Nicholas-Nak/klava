@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it, vi } from 'vitest';
+import * as textGenerator from '../domain/text';
 import { App } from './App';
 
 afterEach(() => vi.useRealTimers());
@@ -172,6 +173,7 @@ it('clears active input when the language is changed', async () => {
   render(<App />);
   await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
   await user.keyboard('текст');
+  await user.tab();
   await user.click(screen.getByRole('radio', { name: 'English' }));
 
   expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
@@ -221,9 +223,7 @@ it('does not start a test from pasted text', async () => {
   expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
     '',
   );
-  expect(
-    screen.getByText('Натисніть на текст, щоб почати'),
-  ).toBeInTheDocument();
+  expect(screen.getByText('Почніть друкувати')).toBeInTheDocument();
 });
 
 it('starts the countdown on first input and finishes without more typing', async () => {
@@ -292,7 +292,12 @@ it('shows elapsed time and completed words in word-count mode', async () => {
 });
 
 it('replenishes a timed passage without restarting its countdown', async () => {
-  vi.spyOn(Math, 'random').mockReturnValue(0);
+  const shortPassage = Array.from({ length: 21 }, (_, index) =>
+    index % 2 === 0 ? 'і' : 'в',
+  );
+  vi.spyOn(textGenerator, 'generateText')
+    .mockReturnValueOnce(Array<string>(25).fill('кіт'))
+    .mockReturnValueOnce(shortPassage);
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
   const user = userEvent.setup();
   render(<App />);
@@ -301,20 +306,16 @@ it('replenishes a timed passage without restarting its countdown', async () => {
   const passage = within(area).getByRole('paragraph');
   const visibleText = passage.querySelector('[aria-hidden="true"]');
   const words = visibleText?.textContent?.split(' ') ?? [];
-  expect(words).toHaveLength(100);
+  expect(words).toHaveLength(21);
   const input = screen.getByRole('textbox', { name: 'Введення тексту' });
   await user.click(area);
   fireEvent.change(input, { target: { value: words[0] } });
   act(() => vi.advanceTimersByTime(5000));
 
-  act(() => {
-    for (const word of words.slice(0, 81)) {
-      fireEvent.change(input, { target: { value: word } });
-      fireEvent.keyDown(input, { key: ' ' });
-    }
-  });
+  await user.keyboard(` ${words[1]} `);
 
-  expect(visibleText?.textContent?.split(' ')).toHaveLength(200);
+  expect(visibleText?.textContent?.split(' ')).toHaveLength(121);
+  expect(visibleText?.textContent?.split(' ').slice(0, 21)).toEqual(words);
   expect(input).toBeEnabled();
   expect(screen.getByRole('timer')).toHaveTextContent('25 с');
   act(() => vi.advanceTimersByTime(1000));
@@ -346,4 +347,49 @@ it('keeps the native input caret at the end of the current word', async () => {
   expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
     'abcx',
   );
+});
+
+it('hides controls while typing and restores them when focus leaves the text', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const area = screen.getByRole('region', { name: 'Текст для друку' });
+  const input = screen.getByRole('textbox', { name: 'Введення тексту' });
+  await user.click(area);
+  expect(screen.getByText('Почніть друкувати')).toBeInTheDocument();
+  await user.keyboard('кі');
+
+  expect(screen.queryByRole('heading', { name: 'Klava' })).toBeNull();
+  expect(screen.queryByRole('radio', { name: 'English' })).toBeNull();
+  expect(input).toHaveFocus();
+
+  await user.tab();
+
+  expect(screen.getByRole('heading', { name: 'Klava' })).toBeInTheDocument();
+  expect(screen.getByRole('radio', { name: 'English' })).toBeInTheDocument();
+  expect(
+    screen.getByText('Натисніть на текст, щоб продовжити'),
+  ).toBeInTheDocument();
+
+  await user.click(area);
+  await user.keyboard('т');
+  expect(input).toHaveValue('кіт');
+  expect(screen.queryByText('Натисніть на текст, щоб продовжити')).toBeNull();
+});
+
+it('keeps the countdown running after focus leaves the text', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('a');
+  await user.tab();
+  act(() => vi.advanceTimersByTime(3000));
+
+  expect(screen.getByRole('timer')).toHaveTextContent('12 с');
+  expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
+    'a',
+  );
+  expect(screen.getByRole('radio', { name: 'Час' })).toBeChecked();
 });

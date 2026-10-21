@@ -7,6 +7,8 @@ import styles from './TypingArea.module.css';
 interface TypingAreaProps {
   test: TestState;
   language: Language;
+  focused: boolean;
+  onFocusChange: (focused: boolean) => void;
   onInput: (value: string) => void;
   onAdvance: () => void;
 }
@@ -14,6 +16,8 @@ interface TypingAreaProps {
 export function TypingArea({
   test,
   language,
+  focused,
+  onFocusChange,
   onInput,
   onAdvance,
 }: TypingAreaProps) {
@@ -52,6 +56,8 @@ export function TypingArea({
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
+        onFocus={() => onFocusChange(true)}
+        onBlur={() => onFocusChange(false)}
         onPaste={(event) => event.preventDefault()}
         onSelect={(event) => {
           const input = event.currentTarget;
@@ -73,12 +79,16 @@ export function TypingArea({
         language={language}
         completed={test.completed}
         input={test.input}
-        active={test.phase !== 'finished'}
+        active={focused && test.phase !== 'finished'}
         idle={test.phase === 'idle'}
       />
-      {test.phase === 'idle' && (
+      {test.phase !== 'finished' && (test.phase === 'idle' || !focused) && (
         <span className={styles.hint} aria-hidden="true">
-          Натисніть на текст, щоб почати
+          {test.phase === 'running'
+            ? 'Натисніть на текст, щоб продовжити'
+            : focused
+              ? 'Почніть друкувати'
+              : 'Натисніть на текст, щоб почати'}
         </span>
       )}
     </section>

@@ -66,6 +66,20 @@
   padding-top: 20px;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
+.quietActions {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quietActions:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .refreshButton {
   display: inline-flex;
   align-items: center;
