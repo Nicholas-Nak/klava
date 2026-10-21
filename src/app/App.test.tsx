@@ -309,3 +309,19 @@ it('replenishes a timed passage without restarting its countdown', async () => {
   act(() => vi.advanceTimersByTime(1000));
   expect(screen.getByRole('timer')).toHaveTextContent('24 с');
 });
+
+it('updates live WPM as typing progresses and time passes', async () => {
+  vi.spyOn(Math, 'random').mockReturnValue(0);
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  const speed = screen.getByRole('status', { name: 'Швидкість друку' });
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('і ');
+  expect(speed).toHaveTextContent('0 WPM');
+
+  act(() => vi.advanceTimersByTime(1000));
+  expect(speed).toHaveTextContent('24 WPM');
+  act(() => vi.advanceTimersByTime(1000));
+  expect(speed).toHaveTextContent('12 WPM');
+});

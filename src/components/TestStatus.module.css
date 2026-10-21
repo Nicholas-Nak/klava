@@ -21,3 +21,14 @@
   color: var(--muted);
   font-size: 14px;
 }
+
+.speed {
+  margin-left: auto;
+  color: var(--ink);
+  font-size: 26px;
+}
+
+.speed small {
+  color: var(--muted);
+  font-size: 12px;
+}
