@@ -200,6 +200,16 @@ it('finishes a word-count test on the last character', async () => {
   expect(
     screen.getByRole('textbox', { name: 'Введення тексту' }),
   ).toBeDisabled();
+  expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
+
+  await user.click(screen.getByRole('button', { name: 'Ще раз' }));
+
+  expect(screen.queryByRole('heading', { name: 'Тест завершено' })).toBeNull();
+  expect(
+    screen.getByRole('textbox', { name: 'Введення тексту' }),
+  ).toBeEnabled();
+  expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
+  expect(screen.getByRole('radio', { name: '10' })).toBeChecked();
 });
 
 it('does not start a test from pasted text', async () => {
@@ -237,6 +247,7 @@ it('starts the countdown on first input and finishes without more typing', async
   expect(
     screen.getByRole('textbox', { name: 'Введення тексту' }),
   ).toBeDisabled();
+  expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
 });
 
 it('clears the old countdown when a test is restarted', async () => {

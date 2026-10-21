@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { ModeControls } from '../components/ModeControls';
 import { TextControls } from '../components/TextControls';
 import { TestStatus } from '../components/TestStatus';
@@ -24,6 +24,13 @@ export function App() {
   );
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (test.phase === 'finished') {
+      resultHeadingRef.current?.focus({ preventScroll: true });
+    }
+  }, [test.phase]);
 
   useEffect(() => {
     if (test.phase !== 'running') return;
@@ -97,6 +104,15 @@ export function App() {
           />
           <TextControls options={options} onChange={updateOptions} />
         </div>
+        {test.phase === 'finished' && (
+          <h2
+            className={styles.finishedTitle}
+            ref={resultHeadingRef}
+            tabIndex={-1}
+          >
+            Тест завершено
+          </h2>
+        )}
         <TestStatus test={test} />
         <TypingArea
           test={test}
@@ -127,7 +143,7 @@ export function App() {
                 strokeLinejoin="round"
               />
             </svg>
-            Інший текст
+            {test.phase === 'finished' ? 'Ще раз' : 'Інший текст'}
           </button>
         </div>
       </main>

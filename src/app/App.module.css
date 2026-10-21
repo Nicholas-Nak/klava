@@ -41,6 +41,25 @@
   border-bottom: 1px solid var(--line);
 }
 
+.finishedTitle {
+  width: fit-content;
+  max-width: 100%;
+  margin: 32px 0 0;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
+}
+
+.finishedTitle:focus {
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.35em;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
