@@ -1,9 +1,17 @@
+.viewport {
+  max-height: 5.4em;
+  overflow: hidden;
+  font-size: clamp(20px, 2.4vw, 28px);
+  line-height: 1.8;
+}
+
 .passage {
   position: relative;
   margin: 0;
   font-family: var(--font-test);
-  font-size: clamp(20px, 2.4vw, 28px);
-  line-height: 1.8;
+  font-size: inherit;
+  line-height: inherit;
+  transition: transform 80ms linear;
 }
 
 .caret {
@@ -30,6 +38,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .passage {
+    transition: none;
+  }
+
   .caret {
     animation: none;
     transition: none;
