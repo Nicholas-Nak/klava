@@ -4,3 +4,34 @@ export function charactersMatch(expected: string, actual: string): boolean {
 
   return normalize(expected) === normalize(actual);
 }
+
+export type CharacterStatus = 'pending' | 'correct' | 'incorrect' | 'extra';
+
+export interface Character {
+  value: string;
+  status: CharacterStatus;
+}
+
+export function getCharacters(
+  word: string,
+  input = '',
+  submitted = false,
+): Character[] {
+  const expected = Array.from(word.normalize('NFC'));
+  const actual = Array.from(input.normalize('NFC'));
+
+  return Array.from(
+    { length: Math.max(expected.length, actual.length) },
+    (_, index) => {
+      const value = expected[index] ?? actual[index] ?? '';
+      const typed = actual[index];
+      let status: CharacterStatus;
+      if (expected[index] === undefined) status = 'extra';
+      else if (typed === undefined)
+        status = submitted ? 'incorrect' : 'pending';
+      else status = charactersMatch(value, typed) ? 'correct' : 'incorrect';
+
+      return { value, status };
+    },
+  );
+}

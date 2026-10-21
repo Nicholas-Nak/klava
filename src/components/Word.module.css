@@ -1,4 +1,25 @@
 .word {
   display: inline-block;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.pending {
+  color: var(--muted);
+}
+
+.correct {
+  color: var(--ink);
+}
+
+.incorrect {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.extra {
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-decoration: line-through;
 }
