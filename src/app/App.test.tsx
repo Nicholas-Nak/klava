@@ -1,7 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { App } from './App';
+
+afterEach(() => vi.useRealTimers());
 
 it('renders the application', () => {
   render(<App />);
@@ -212,4 +214,68 @@ it('does not start a test from pasted text', async () => {
   expect(
     screen.getByText('Натисніть на текст, щоб почати'),
   ).toBeInTheDocument();
+});
+
+it('starts the countdown on first input and finishes without more typing', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  const timer = screen.getByRole('timer', { name: 'Залишилося часу' });
+
+  act(() => vi.advanceTimersByTime(5000));
+  expect(timer).toHaveTextContent('15 с');
+
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('a');
+  act(() => vi.advanceTimersByTime(1000));
+  expect(timer).toHaveTextContent('14 с');
+
+  act(() => vi.advanceTimersByTime(14000));
+  expect(timer).toHaveTextContent('0 с');
+  expect(
+    screen.getByRole('textbox', { name: 'Введення тексту' }),
+  ).toBeDisabled();
+});
+
+it('clears the old countdown when a test is restarted', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('a');
+  act(() => vi.advanceTimersByTime(5000));
+  const timer = screen.getByRole('timer', { name: 'Залишилося часу' });
+  expect(timer).toHaveTextContent('10 с');
+
+  await user.click(screen.getByRole('button', { name: 'Інший текст' }));
+  act(() => vi.advanceTimersByTime(20000));
+  expect(timer).toHaveTextContent('15 с');
+  expect(
+    screen.getByRole('textbox', { name: 'Введення тексту' }),
+  ).toBeEnabled();
+
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('a');
+  act(() => vi.advanceTimersByTime(1000));
+  expect(timer).toHaveTextContent('14 с');
+});
+
+it('shows elapsed time and completed words in word-count mode', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('x ');
+  act(() => vi.advanceTimersByTime(2000));
+
+  expect(screen.getByRole('timer', { name: 'Минуло часу' })).toHaveTextContent(
+    '2 с',
+  );
+  expect(
+    screen.getByRole('status', { name: 'Набрано слів' }),
+  ).toHaveTextContent('1 / 25');
 });

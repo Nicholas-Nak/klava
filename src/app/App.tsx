@@ -1,6 +1,7 @@
-import { useReducer, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { ModeControls } from '../components/ModeControls';
 import { TextControls } from '../components/TextControls';
+import { TestStatus } from '../components/TestStatus';
 import { TypingArea } from '../components/TypingArea';
 import { generateText } from '../domain/text';
 import { createTest, testReducer } from '../domain/testReducer';
@@ -23,6 +24,14 @@ export function App() {
   );
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
+
+  useEffect(() => {
+    if (test.phase !== 'running') return;
+    const interval = window.setInterval(() => {
+      dispatch({ type: 'tick', at: performance.now() });
+    }, 100);
+    return () => window.clearInterval(interval);
+  }, [test.phase, test.startedAt]);
 
   function resetTest(nextMode = selectedMode, nextOptions = options) {
     const length = nextMode.type === 'words' ? nextMode.count : 100;
@@ -75,6 +84,7 @@ export function App() {
           />
           <TextControls options={options} onChange={updateOptions} />
         </div>
+        <TestStatus test={test} />
         <TypingArea
           test={test}
           language={options.language}

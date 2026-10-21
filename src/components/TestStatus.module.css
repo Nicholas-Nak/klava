@@ -1,0 +1,23 @@
+.status {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  margin-top: 24px;
+  font-family: var(--font-test);
+}
+
+.timer {
+  color: var(--accent);
+  font-size: 26px;
+}
+
+.timer small {
+  font-size: 14px;
+}
+
+.progress {
+  color: var(--muted);
+  font-size: 14px;
+}
