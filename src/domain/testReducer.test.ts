@@ -287,3 +287,46 @@ it('keeps the result frozen after finishing and stops clock updates on reset', (
   state = testReducer(state, { type: 'reset', words, mode });
   expect(testReducer(state, { type: 'tick', at: 21000 })).toBe(state);
 });
+
+it('adds words to a timed test without resetting its progress or clock', () => {
+  let state = createTest(['кіт'], { type: 'time', seconds: 30 });
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 100 });
+  state = testReducer(state, { type: 'advance', at: 500 });
+  state = testReducer(state, { type: 'append', words: ['пес', 'дім'] });
+  state = testReducer(state, { type: 'input', value: 'п', at: 1000 });
+
+  expect(state.words).toEqual(['кіт', 'пес', 'дім']);
+  expect(state.completed).toEqual(['кіт']);
+  expect(state.input).toBe('п');
+  expect(state.phase).toBe('running');
+  expect(state.startedAt).toBe(100);
+  expect(state.elapsedMs).toBe(900);
+});
+
+it('does not append words to fixed-length, idle or finished tests', () => {
+  const append = { type: 'append', words: ['пес'] } as const;
+  const idle = createTest(words, mode);
+  expect(testReducer(idle, append)).toBe(idle);
+
+  const running = testReducer(idle, { type: 'input', value: 'к', at: 0 });
+  expect(testReducer(running, append)).toBe(running);
+
+  let finished = createTest(['кіт'], { type: 'time', seconds: 15 });
+  finished = testReducer(finished, { type: 'input', value: 'к', at: 0 });
+  finished = testReducer(finished, { type: 'tick', at: 15000 });
+  expect(testReducer(finished, append)).toBe(finished);
+});
+
+it('waits for a new batch instead of scoring input against a missing word', () => {
+  let state = createTest(['кіт'], { type: 'time', seconds: 30 });
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 0 });
+  state = testReducer(state, { type: 'advance', at: 500 });
+  expect(
+    testReducer(state, { type: 'input', value: 'невідомо', at: 1000 }),
+  ).toBe(state);
+
+  state = testReducer(state, { type: 'append', words: ['пес'] });
+  state = testReducer(state, { type: 'input', value: 'п', at: 1500 });
+  expect(state.input).toBe('п');
+  expect(state.startedAt).toBe(0);
+});

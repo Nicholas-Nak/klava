@@ -6,6 +6,7 @@ export function sampleWords(
   words: readonly string[],
   count: number,
   random = Math.random,
+  previousWord?: string,
 ): string[] {
   if (!Number.isSafeInteger(count) || count < 0) {
     throw new RangeError('Word count must be a non-negative integer.');
@@ -17,7 +18,8 @@ export function sampleWords(
   }
 
   const selected: string[] = [];
-  let previousIndex = -1;
+  let previousIndex =
+    previousWord === undefined ? -1 : pool.indexOf(previousWord);
 
   for (let i = 0; i < count; i++) {
     const skipPrevious = previousIndex >= 0 && pool.length > 1;
@@ -86,9 +88,11 @@ export function generateText(
   count: number,
   options: TextOptions,
   random = Math.random,
+  previousWord?: string,
 ): string[] {
   const dictionary = options.language === 'uk' ? ukrainian : english;
-  let words = sampleWords(dictionary, count, random);
+  const previous = previousWord?.toLowerCase().replace(/[,.!?]$/, '');
+  let words = sampleWords(dictionary, count, random, previous);
 
   if (options.numbers) words = addNumbers(words, random);
   if (options.punctuation) words = addPunctuation(words, random);

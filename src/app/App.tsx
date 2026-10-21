@@ -33,6 +33,19 @@ export function App() {
     return () => window.clearInterval(interval);
   }, [test.phase, test.startedAt]);
 
+  useEffect(() => {
+    if (
+      test.phase !== 'running' ||
+      test.mode.type !== 'time' ||
+      test.words.length - test.completed.length >= 20
+    )
+      return;
+    dispatch({
+      type: 'append',
+      words: generateText(100, options, Math.random, test.words.at(-1)),
+    });
+  }, [test.phase, test.mode.type, test.words, test.completed.length, options]);
+
   function resetTest(nextMode = selectedMode, nextOptions = options) {
     const length = nextMode.type === 'words' ? nextMode.count : 100;
     dispatch({

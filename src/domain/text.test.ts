@@ -5,6 +5,14 @@ import english from '../data/en.json';
 import { addNumbers, addPunctuation, generateText, sampleWords } from './text';
 
 describe('sampleWords', () => {
+  it('avoids repeating the last word of a previous batch', () => {
+    expect(sampleWords(['one', 'two', 'three'], 3, () => 0, 'one')).toEqual([
+      'two',
+      'one',
+      'two',
+    ]);
+  });
+
   it('returns the requested number of words without changing the source', () => {
     const words = Object.freeze(['ліс', 'море', 'дім']);
     const result = sampleWords(words, 50);
@@ -175,6 +183,17 @@ describe('addNumbers', () => {
 });
 
 describe.each(['uk', 'en'] as const)('generateText (%s)', (language) => {
+  it('avoids a repeated word across punctuated batches', () => {
+    const options = { language, punctuation: true, numbers: false };
+    const previous = generateText(1, options, () => 0)[0];
+    const next = generateText(10, options, () => 0, previous);
+
+    expect(next).toHaveLength(10);
+    expect(next[0]?.toLowerCase().replace(/[,.!?]$/, '')).not.toBe(
+      previous?.toLowerCase().replace(/[,.!?]$/, ''),
+    );
+  });
+
   const dictionary = language === 'uk' ? ukrainian : english;
 
   it.each([10, 25, 50, 100])(

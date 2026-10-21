@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it, vi } from 'vitest';
 import { App } from './App';
@@ -278,4 +278,34 @@ it('shows elapsed time and completed words in word-count mode', async () => {
   expect(
     screen.getByRole('status', { name: 'Набрано слів' }),
   ).toHaveTextContent('1 / 25');
+});
+
+it('replenishes a timed passage without restarting its countdown', async () => {
+  vi.spyOn(Math, 'random').mockReturnValue(0);
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  const area = screen.getByRole('region', { name: 'Текст для друку' });
+  const passage = within(area).getByRole('paragraph');
+  const visibleText = passage.querySelector('[aria-hidden="true"]');
+  const words = visibleText?.textContent?.split(' ') ?? [];
+  expect(words).toHaveLength(100);
+  const input = screen.getByRole('textbox', { name: 'Введення тексту' });
+  await user.click(area);
+  fireEvent.change(input, { target: { value: words[0] } });
+  act(() => vi.advanceTimersByTime(5000));
+
+  act(() => {
+    for (const word of words.slice(0, 81)) {
+      fireEvent.change(input, { target: { value: word } });
+      fireEvent.keyDown(input, { key: ' ' });
+    }
+  });
+
+  expect(visibleText?.textContent?.split(' ')).toHaveLength(200);
+  expect(input).toBeEnabled();
+  expect(screen.getByRole('timer')).toHaveTextContent('25 с');
+  act(() => vi.advanceTimersByTime(1000));
+  expect(screen.getByRole('timer')).toHaveTextContent('24 с');
 });
