@@ -100,3 +100,116 @@ it('rejects an empty passage', () => {
 it('rejects a passage that does not match the selected word count', () => {
   expect(() => createTest(['кіт'], mode)).toThrow(RangeError);
 });
+
+function startLastWord(passage = words) {
+  let state = createTest(passage, mode);
+  for (let index = 0; index < 9; index++) {
+    state = testReducer(state, {
+      type: 'input',
+      value: passage[index] ?? '',
+      at: index * 100,
+    });
+    state = testReducer(state, { type: 'advance', at: index * 100 + 50 });
+  }
+  return state;
+}
+
+it('ignores word submission before typing', () => {
+  const state = createTest(words, mode);
+  expect(testReducer(state, { type: 'advance', at: 100 })).toBe(state);
+});
+
+it('submits a partial word and starts the next one empty', () => {
+  let state = testReducer(createTest(words, mode), {
+    type: 'input',
+    value: 'к',
+    at: 100,
+  });
+  state = testReducer(state, { type: 'advance', at: 500 });
+
+  expect(state.completed).toEqual(['к']);
+  expect(state.input).toBe('');
+  expect(state.elapsedMs).toBe(400);
+  expect(state.phase).toBe('running');
+  expect(testReducer(state, { type: 'advance', at: 600 })).toBe(state);
+});
+
+it('does not backspace into a submitted word', () => {
+  let state = testReducer(createTest(words, mode), {
+    type: 'input',
+    value: 'кіт',
+    at: 100,
+  });
+  state = testReducer(state, { type: 'advance', at: 500 });
+  state = testReducer(state, { type: 'input', value: 'п', at: 600 });
+  state = testReducer(state, { type: 'input', value: '', at: 700 });
+
+  expect(state.completed).toEqual(['кіт']);
+  expect(state.input).toBe('');
+});
+
+it('finishes on the final correct character without a trailing space', () => {
+  const state = testReducer(startLastWord(), {
+    type: 'input',
+    value: 'кіт',
+    at: 1000,
+  });
+
+  expect(state.phase).toBe('finished');
+  expect(state.completed).toHaveLength(10);
+  expect(state.input).toBe('');
+  expect(state.startedAt).toBe(0);
+  expect(state.finishedAt).toBe(1000);
+  expect(state.elapsedMs).toBe(1000);
+});
+
+it('accepts either apostrophe in the final Ukrainian word', () => {
+  const passage = [...words.slice(0, 9), 'сім’я'];
+  const state = testReducer(startLastWord(passage), {
+    type: 'input',
+    value: "сім'я",
+    at: 1000,
+  });
+
+  expect(state.phase).toBe('finished');
+  expect(state.completed.at(-1)).toBe("сім'я");
+});
+
+it('allows a final word with mistakes to be corrected or submitted', () => {
+  const running = testReducer(startLastWord(), {
+    type: 'input',
+    value: 'кітт',
+    at: 1000,
+  });
+  expect(running.phase).toBe('running');
+
+  const finished = testReducer(running, { type: 'advance', at: 1200 });
+  expect(finished.phase).toBe('finished');
+  expect(finished.completed.at(-1)).toBe('кітт');
+});
+
+it('ignores further input after finishing and can reset', () => {
+  const finished = testReducer(startLastWord(), {
+    type: 'input',
+    value: 'кіт',
+    at: 1000,
+  });
+  expect(testReducer(finished, { type: 'input', value: 'ще', at: 1100 })).toBe(
+    finished,
+  );
+  expect(testReducer(finished, { type: 'advance', at: 1200 })).toBe(finished);
+
+  const reset = testReducer(finished, { type: 'reset', words, mode });
+  expect(reset.phase).toBe('idle');
+  expect(reset.completed).toEqual([]);
+  expect(reset.finishedAt).toBeNull();
+});
+
+it('does not end a timed test when the initial word batch is consumed', () => {
+  let state = createTest(['кіт'], { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 100 });
+  state = testReducer(state, { type: 'advance', at: 300 });
+
+  expect(state.phase).toBe('running');
+  expect(state.completed).toEqual(['кіт']);
+});
