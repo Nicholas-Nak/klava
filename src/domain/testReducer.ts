@@ -16,6 +16,7 @@ export type TestState = {
 export type TestAction =
   | { type: 'input'; value: string; at: number }
   | { type: 'advance'; at: number }
+  | { type: 'tick'; at: number }
   | { type: 'reset'; words: readonly string[]; mode: TestMode };
 
 export function createTest(
@@ -61,11 +62,32 @@ function completeWord(state: TestState, at: number): TestState {
 }
 
 export function testReducer(state: TestState, action: TestAction): TestState {
+  if (
+    'at' in action &&
+    state.phase === 'running' &&
+    state.mode.type === 'time'
+  ) {
+    const limitMs = state.mode.seconds * 1000;
+    if (action.at >= state.startedAt + limitMs) {
+      return {
+        ...state,
+        phase: 'finished',
+        elapsedMs: limitMs,
+        finishedAt: state.startedAt + limitMs,
+      };
+    }
+  }
+
   switch (action.type) {
     case 'reset':
       return createTest(action.words, action.mode);
     case 'advance':
       return completeWord(state, action.at);
+    case 'tick': {
+      if (state.phase !== 'running') return state;
+      const elapsedMs = Math.max(state.elapsedMs, action.at - state.startedAt);
+      return elapsedMs === state.elapsedMs ? state : { ...state, elapsedMs };
+    }
     case 'input': {
       if (state.phase === 'finished') return state;
       const input = action.value.normalize('NFC');

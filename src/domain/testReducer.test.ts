@@ -213,3 +213,77 @@ it('does not end a timed test when the initial word batch is consumed', () => {
   expect(state.phase).toBe('running');
   expect(state.completed).toEqual(['кіт']);
 });
+
+it('ignores clock updates until typing starts', () => {
+  const state = createTest(words, { type: 'time', seconds: 15 });
+  expect(testReducer(state, { type: 'tick', at: 100000 })).toBe(state);
+});
+
+it.each([15, 30, 60, 120] as const)(
+  'finishes a timed test at exactly %i seconds',
+  (seconds) => {
+    let state = createTest(words, { type: 'time', seconds });
+    state = testReducer(state, { type: 'input', value: 'к', at: 0 });
+    state = testReducer(state, { type: 'tick', at: seconds * 1000 - 1 });
+    expect(state.phase).toBe('running');
+
+    state = testReducer(state, { type: 'tick', at: seconds * 1000 });
+    expect(state.phase).toBe('finished');
+    expect(state.elapsedMs).toBe(seconds * 1000);
+    expect(state.finishedAt).toBe(seconds * 1000);
+    expect(state.input).toBe('к');
+  },
+);
+
+it('uses the deadline when a clock update arrives late', () => {
+  let state = createTest(words, { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'input', value: 'к', at: 1000 });
+  state = testReducer(state, { type: 'tick', at: 30000 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.finishedAt).toBe(16000);
+  expect(state.elapsedMs).toBe(15000);
+});
+
+it('rejects characters arriving at or after the deadline', () => {
+  let state = createTest(words, { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'input', value: 'к', at: 100 });
+  state = testReducer(state, { type: 'input', value: 'кі', at: 15100 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.input).toBe('к');
+  expect(state.elapsedMs).toBe(15000);
+});
+
+it('does not submit a word when its space arrives too late', () => {
+  let state = createTest(words, { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 100 });
+  state = testReducer(state, { type: 'advance', at: 15100 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.completed).toEqual([]);
+  expect(state.input).toBe('кіт');
+});
+
+it('updates elapsed time while the current word is empty', () => {
+  let state = testReducer(createTest(words, mode), {
+    type: 'input',
+    value: 'к',
+    at: 100,
+  });
+  state = testReducer(state, { type: 'input', value: '', at: 200 });
+  state = testReducer(state, { type: 'tick', at: 5000 });
+
+  expect(state.phase).toBe('running');
+  expect(state.elapsedMs).toBe(4900);
+});
+
+it('keeps the result frozen after finishing and stops clock updates on reset', () => {
+  let state = createTest(words, { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'input', value: 'к', at: 100 });
+  state = testReducer(state, { type: 'tick', at: 15100 });
+  expect(testReducer(state, { type: 'tick', at: 20000 })).toBe(state);
+
+  state = testReducer(state, { type: 'reset', words, mode });
+  expect(testReducer(state, { type: 'tick', at: 21000 })).toBe(state);
+});
