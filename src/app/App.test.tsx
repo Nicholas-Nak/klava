@@ -148,3 +148,68 @@ it.each([15, 30, 60, 120])(
     expect(screen.getByRole('radio', { name: `${seconds} с` })).toBeChecked();
   },
 );
+
+it('focuses typing on the passage and edits only the current word', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const area = screen.getByRole('region', { name: 'Текст для друку' });
+  const input = screen.getByRole('textbox', { name: 'Введення тексту' });
+
+  await user.click(area);
+  expect(input).toHaveFocus();
+  await user.keyboard('кіт{Backspace}');
+  expect(input).toHaveValue('кі');
+  await user.keyboard(' {Backspace}{Backspace}');
+  expect(input).toHaveValue('');
+  await user.keyboard('п');
+  expect(input).toHaveValue('п');
+});
+
+it('clears active input when the language is changed', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('текст');
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+
+  expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
+    '',
+  );
+  expect(
+    within(screen.getByRole('region', { name: 'Текст для друку' })).getByRole(
+      'paragraph',
+    ),
+  ).toHaveAttribute('lang', 'en');
+});
+
+it('finishes a word-count test on the last character', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+  await user.click(screen.getByRole('radio', { name: '10' }));
+  const area = screen.getByRole('region', { name: 'Текст для друку' });
+  const passage = within(area).getByRole('paragraph');
+  const text = passage.querySelector('[aria-hidden="true"]')?.textContent;
+  expect(text).toBeTruthy();
+
+  await user.click(area);
+  await user.keyboard(text ?? '');
+
+  expect(
+    screen.getByRole('textbox', { name: 'Введення тексту' }),
+  ).toBeDisabled();
+});
+
+it('does not start a test from pasted text', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.paste('copied words');
+
+  expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
+    '',
+  );
+  expect(
+    screen.getByText('Натисніть на текст, щоб почати'),
+  ).toBeInTheDocument();
+});

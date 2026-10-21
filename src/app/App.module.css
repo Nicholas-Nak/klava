@@ -33,11 +33,6 @@
   padding: clamp(32px, 6vw, 72px) 0;
 }
 
-.textArea {
-  padding: 32px 0;
-  border-bottom: 1px solid var(--line);
-}
-
 .toolbar {
   display: flex;
   flex-direction: column;

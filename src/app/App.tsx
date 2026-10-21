@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { ModeControls } from '../components/ModeControls';
-import { Passage } from '../components/Passage';
 import { TextControls } from '../components/TextControls';
+import { TypingArea } from '../components/TypingArea';
 import { generateText } from '../domain/text';
+import { createTest, testReducer } from '../domain/testReducer';
 import type { TestMode, TextOptions, TimeLimit, WordCount } from '../types';
 import styles from './App.module.css';
 
@@ -17,31 +18,43 @@ export function App() {
   const [count, setCount] = useState<WordCount>(25);
   const [mode, setMode] = useState<TestMode['type']>('words');
   const [seconds, setSeconds] = useState<TimeLimit>(30);
-  const [words, setWords] = useState(() => generateText(25, initialOptions));
-  const textLength = mode === 'words' ? count : 100;
+  const [test, dispatch] = useReducer(testReducer, undefined, () =>
+    createTest(generateText(25, initialOptions), { type: 'words', count: 25 }),
+  );
+  const selectedMode: TestMode =
+    mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
 
-  function refreshText() {
-    setWords(generateText(textLength, options));
+  function resetTest(nextMode = selectedMode, nextOptions = options) {
+    const length = nextMode.type === 'words' ? nextMode.count : 100;
+    dispatch({
+      type: 'reset',
+      words: generateText(length, nextOptions),
+      mode: nextMode,
+    });
   }
 
   function updateOptions(nextOptions: TextOptions) {
     setOptions(nextOptions);
-    setWords(generateText(textLength, nextOptions));
+    resetTest(selectedMode, nextOptions);
   }
 
   function updateCount(nextCount: WordCount) {
     setCount(nextCount);
-    setWords(generateText(nextCount, options));
+    resetTest({ type: 'words', count: nextCount });
   }
 
   function updateMode(nextMode: TestMode['type']) {
     setMode(nextMode);
-    setWords(generateText(nextMode === 'words' ? count : 100, options));
+    resetTest(
+      nextMode === 'words'
+        ? { type: 'words', count }
+        : { type: 'time', seconds },
+    );
   }
 
   function updateSeconds(nextSeconds: TimeLimit) {
     setSeconds(nextSeconds);
-    refreshText();
+    resetTest({ type: 'time', seconds: nextSeconds });
   }
 
   return (
@@ -62,14 +75,19 @@ export function App() {
           />
           <TextControls options={options} onChange={updateOptions} />
         </div>
-        <section className={styles.textArea} aria-label="Текст для друку">
-          <Passage words={words} language={options.language} />
-        </section>
+        <TypingArea
+          test={test}
+          language={options.language}
+          onInput={(value) =>
+            dispatch({ type: 'input', value, at: performance.now() })
+          }
+          onAdvance={() => dispatch({ type: 'advance', at: performance.now() })}
+        />
         <div className={styles.actions}>
           <button
             className={styles.refreshButton}
             type="button"
-            onClick={refreshText}
+            onClick={() => resetTest()}
           >
             <svg
               width="18"
