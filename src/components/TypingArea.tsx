@@ -53,6 +53,13 @@ export function TypingArea({
         autoCorrect="off"
         spellCheck={false}
         onPaste={(event) => event.preventDefault()}
+        onSelect={(event) => {
+          const input = event.currentTarget;
+          const end = input.value.length;
+          if (input.selectionStart !== end || input.selectionEnd !== end) {
+            input.setSelectionRange(end, end);
+          }
+        }}
         onChange={(event) => handleInput(event.currentTarget.value)}
         onKeyDown={(event) => {
           if (event.key === ' ' && !event.nativeEvent.isComposing) {
@@ -66,6 +73,8 @@ export function TypingArea({
         language={language}
         completed={test.completed}
         input={test.input}
+        active={test.phase !== 'finished'}
+        idle={test.phase === 'idle'}
       />
       {test.phase === 'idle' && (
         <span className={styles.hint} aria-hidden="true">

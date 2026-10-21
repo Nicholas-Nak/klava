@@ -5,16 +5,34 @@ interface WordProps {
   text: string;
   input?: string;
   submitted?: boolean;
+  cursor?: number | null;
 }
 
-export function Word({ text, input = '', submitted = false }: WordProps) {
+export function Word({
+  text,
+  input = '',
+  submitted = false,
+  cursor = null,
+}: WordProps) {
+  const characters = getCharacters(text, input, submitted);
   return (
     <span className={styles.word}>
-      {getCharacters(text, input, submitted).map((character, index) => (
-        <span key={index} className={styles[character.status]}>
-          {character.value}
-        </span>
-      ))}
+      {characters.map((character, index) => {
+        const after =
+          cursor === characters.length && index === characters.length - 1;
+        const anchor = index === cursor || after;
+        return (
+          <span
+            key={index}
+            className={styles[character.status]}
+            data-caret-anchor={
+              anchor ? (after ? 'after' : 'before') : undefined
+            }
+          >
+            {character.value}
+          </span>
+        );
+      })}
     </span>
   );
 }

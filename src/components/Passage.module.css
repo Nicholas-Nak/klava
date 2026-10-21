@@ -1,8 +1,39 @@
 .passage {
+  position: relative;
   margin: 0;
   font-family: var(--font-test);
   font-size: clamp(20px, 2.4vw, 28px);
   line-height: 1.8;
+}
+
+.caret {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 1em;
+  border-radius: 1px;
+  background: var(--accent);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 80ms linear;
+}
+
+.idleCaret {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+    transition: none;
+  }
 }
 
 .accessibleText {

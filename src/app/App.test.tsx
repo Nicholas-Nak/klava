@@ -336,3 +336,14 @@ it('updates live WPM as typing progresses and time passes', async () => {
   act(() => vi.advanceTimersByTime(1000));
   expect(speed).toHaveTextContent('12 WPM');
 });
+
+it('keeps the native input caret at the end of the current word', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('abc{ArrowLeft}x');
+
+  expect(screen.getByRole('textbox', { name: 'Введення тексту' })).toHaveValue(
+    'abcx',
+  );
+});
