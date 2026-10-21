@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { TestState } from '../domain/testReducer';
 import type { Language } from '../types';
 import { Passage } from './Passage';
@@ -22,6 +22,8 @@ export function TypingArea({
   onAdvance,
 }: TypingAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const composingRef = useRef(false);
+  const [draft, setDraft] = useState<string | null>(null);
   const instructionsId = useId();
 
   function handleInput(value: string) {
@@ -50,25 +52,48 @@ export function TypingArea({
         className={styles.input}
         aria-label="Введення тексту"
         aria-describedby={instructionsId}
-        value={test.input}
+        lang={language}
+        value={draft ?? test.input}
         disabled={test.phase === 'finished'}
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
         onFocus={() => onFocusChange(true)}
-        onBlur={() => onFocusChange(false)}
+        onBlur={() => {
+          composingRef.current = false;
+          setDraft(null);
+          onFocusChange(false);
+        }}
+        onCompositionStart={(event) => {
+          composingRef.current = true;
+          setDraft(event.currentTarget.value);
+        }}
+        onCompositionEnd={(event) => {
+          if (!composingRef.current) return;
+          composingRef.current = false;
+          setDraft(null);
+          handleInput(event.currentTarget.value);
+        }}
         onPaste={(event) => event.preventDefault()}
         onSelect={(event) => {
+          if (composingRef.current) return;
           const input = event.currentTarget;
           const end = input.value.length;
           if (input.selectionStart !== end || input.selectionEnd !== end) {
             input.setSelectionRange(end, end);
           }
         }}
-        onChange={(event) => handleInput(event.currentTarget.value)}
+        onChange={(event) => {
+          if (composingRef.current) setDraft(event.currentTarget.value);
+          else handleInput(event.currentTarget.value);
+        }}
         onKeyDown={(event) => {
-          if (event.key === ' ' && !event.nativeEvent.isComposing) {
+          if (
+            event.key === ' ' &&
+            !composingRef.current &&
+            !event.nativeEvent.isComposing
+          ) {
             event.preventDefault();
             onAdvance();
           }
@@ -78,7 +103,7 @@ export function TypingArea({
         words={test.words}
         language={language}
         completed={test.completed}
-        input={test.input}
+        input={draft ?? test.input}
         active={focused && test.phase !== 'finished'}
         idle={test.phase === 'idle'}
       />

@@ -393,3 +393,45 @@ it('keeps the countdown running after focus leaves the text', async () => {
   );
   expect(screen.getByRole('radio', { name: 'Час' })).toBeChecked();
 });
+
+it('starts the timer only after a composed character is confirmed', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  const input = screen.getByRole('textbox', { name: 'Введення тексту' });
+  fireEvent.compositionStart(input);
+  fireEvent.change(input, { target: { value: 'і\u0308' } });
+  act(() => vi.advanceTimersByTime(5000));
+
+  expect(screen.getByRole('timer')).toHaveTextContent('15 с');
+  expect(screen.getByRole('radio', { name: 'Час' })).toBeChecked();
+
+  fireEvent.compositionEnd(input, { data: 'і\u0308' });
+  act(() => vi.advanceTimersByTime(1000));
+
+  expect(input).toHaveValue('ї');
+  expect(screen.getByRole('timer')).toHaveTextContent('14 с');
+});
+
+it('discards an unconfirmed character when the countdown expires', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('а');
+  const input = screen.getByRole('textbox', { name: 'Введення тексту' });
+  fireEvent.compositionStart(input);
+  fireEvent.change(input, { target: { value: 'аї' } });
+  act(() => vi.advanceTimersByTime(15000));
+  fireEvent.compositionEnd(input, { data: 'ї' });
+
+  expect(input).toHaveValue('а');
+  expect(input).toBeDisabled();
+  expect(screen.getByRole('timer')).toHaveTextContent('0 с');
+  expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
+});
