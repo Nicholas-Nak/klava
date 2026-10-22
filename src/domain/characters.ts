@@ -12,6 +12,42 @@ export interface Character {
   status: CharacterStatus;
 }
 
+export interface InputEdit {
+  index: number;
+  removed: number;
+  inserted: readonly string[];
+}
+
+export function getInputEdit(previous: string, next: string): InputEdit {
+  const before = Array.from(previous.normalize('NFC'));
+  const after = Array.from(next.normalize('NFC'));
+  let index = 0;
+  while (
+    index < before.length &&
+    index < after.length &&
+    charactersMatch(before[index] ?? '', after[index] ?? '')
+  ) {
+    index++;
+  }
+
+  let beforeEnd = before.length;
+  let afterEnd = after.length;
+  while (
+    beforeEnd > index &&
+    afterEnd > index &&
+    charactersMatch(before[beforeEnd - 1] ?? '', after[afterEnd - 1] ?? '')
+  ) {
+    beforeEnd--;
+    afterEnd--;
+  }
+
+  return {
+    index,
+    removed: beforeEnd - index,
+    inserted: after.slice(index, afterEnd),
+  };
+}
+
 export function getCharacters(
   word: string,
   input = '',

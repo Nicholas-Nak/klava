@@ -1,6 +1,21 @@
 // @vitest-environment node
 import { expect, it } from 'vitest';
-import { charactersMatch, getCharacters } from './characters';
+import { charactersMatch, getCharacters, getInputEdit } from './characters';
+
+it.each([
+  ['', 'кіт', { index: 0, removed: 0, inserted: ['к', 'і', 'т'] }],
+  ['к', 'кіт', { index: 1, removed: 0, inserted: ['і', 'т'] }],
+  ['кіт', 'кі', { index: 2, removed: 1, inserted: [] }],
+  ['кіт', '', { index: 0, removed: 3, inserted: [] }],
+  ['кіт', 'кот', { index: 1, removed: 1, inserted: ['о'] }],
+  ['план', 'пан', { index: 1, removed: 1, inserted: [] }],
+  ['кіт', 'кіт!', { index: 3, removed: 0, inserted: ['!'] }],
+  ['ї', 'і\u0308', { index: 1, removed: 0, inserted: [] }],
+  ["сім'я", 'сім’я', { index: 5, removed: 0, inserted: [] }],
+  ['а🙂', 'а🙃', { index: 1, removed: 1, inserted: ['🙃'] }],
+] as const)('identifies the edit from %j to %j', (previous, next, expected) => {
+  expect(getInputEdit(previous, next)).toEqual(expected);
+});
 
 it.each([
   ['ґ', 'ґ'],
