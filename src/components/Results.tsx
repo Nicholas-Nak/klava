@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { TestResult } from '../domain/results';
 import type { TestOptions } from '../types';
+import { SpeedChart } from './SpeedChart';
 import styles from './Results.module.css';
 
 interface ResultsProps {
@@ -88,6 +89,7 @@ export function Results({ result, options }: ResultsProps) {
           </dd>
         </div>
       </dl>
+      <SpeedChart samples={result.samples} />
       <section className={styles.breakdown} aria-label="Символи та виправлення">
         <h3>Символи та виправлення</h3>
         <dl>
