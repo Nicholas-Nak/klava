@@ -1,10 +1,12 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { ModeControls } from '../components/ModeControls';
+import { Results } from '../components/Results';
 import { TextControls } from '../components/TextControls';
 import { TestStatus } from '../components/TestStatus';
 import { TypingArea } from '../components/TypingArea';
 import { generateText } from '../domain/text';
 import { createTest, testReducer } from '../domain/testReducer';
+import { getTestResult } from '../domain/results';
 import type { TestMode, TextOptions, TimeLimit, WordCount } from '../types';
 import styles from './App.module.css';
 
@@ -25,14 +27,8 @@ export function App() {
   );
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
-  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  const result = test.phase === 'finished' ? getTestResult(test) : null;
   const focusMode = test.phase === 'running' && focused;
-
-  useEffect(() => {
-    if (test.phase === 'finished') {
-      resultHeadingRef.current?.focus({ preventScroll: true });
-    }
-  }, [test.phase]);
 
   useEffect(() => {
     if (test.phase !== 'running') return;
@@ -57,6 +53,7 @@ export function App() {
 
   function resetTest(nextMode = selectedMode, nextOptions = options) {
     const length = nextMode.type === 'words' ? nextMode.count : 100;
+    setFocused(false);
     dispatch({
       type: 'reset',
       words: generateText(length, nextOptions),
@@ -98,42 +95,48 @@ export function App() {
         <h1 className={styles.brand}>Klava</h1>
         <p className={styles.description}>Тренажер друку</p>
       </header>
-      <main className={styles.workspace}>
-        <div
-          className={[styles.toolbar, focusMode ? styles.hidden : ''].join(' ')}
-          aria-hidden={focusMode}
-          inert={focusMode}
-        >
-          <ModeControls
-            mode={mode}
-            count={count}
-            seconds={seconds}
-            onModeChange={updateMode}
-            onCountChange={updateCount}
-            onSecondsChange={updateSeconds}
-          />
-          <TextControls options={options} onChange={updateOptions} />
-        </div>
-        {test.phase === 'finished' && (
-          <h2
-            className={styles.finishedTitle}
-            ref={resultHeadingRef}
-            tabIndex={-1}
-          >
-            Тест завершено
-          </h2>
+      <main
+        className={[
+          styles.workspace,
+          result ? styles.resultWorkspace : '',
+        ].join(' ')}
+      >
+        {result ? (
+          <Results result={result} />
+        ) : (
+          <>
+            <div
+              className={[styles.toolbar, focusMode ? styles.hidden : ''].join(
+                ' ',
+              )}
+              aria-hidden={focusMode}
+              inert={focusMode}
+            >
+              <ModeControls
+                mode={mode}
+                count={count}
+                seconds={seconds}
+                onModeChange={updateMode}
+                onCountChange={updateCount}
+                onSecondsChange={updateSeconds}
+              />
+              <TextControls options={options} onChange={updateOptions} />
+            </div>
+            <TestStatus test={test} />
+            <TypingArea
+              test={test}
+              language={options.language}
+              focused={focused}
+              onFocusChange={setFocused}
+              onInput={(value) =>
+                dispatch({ type: 'input', value, at: performance.now() })
+              }
+              onAdvance={() =>
+                dispatch({ type: 'advance', at: performance.now() })
+              }
+            />
+          </>
         )}
-        <TestStatus test={test} />
-        <TypingArea
-          test={test}
-          language={options.language}
-          focused={focused}
-          onFocusChange={setFocused}
-          onInput={(value) =>
-            dispatch({ type: 'input', value, at: performance.now() })
-          }
-          onAdvance={() => dispatch({ type: 'advance', at: performance.now() })}
-        />
         <div
           className={[
             styles.actions,

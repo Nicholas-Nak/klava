@@ -199,12 +199,14 @@ it('finishes a word-count test on the last character', async () => {
   await user.click(area);
   await user.keyboard(text ?? '');
 
-  expect(
-    screen.getByRole('textbox', { name: 'Введення тексту' }),
-  ).toBeDisabled();
+  expect(screen.queryByRole('textbox')).toBeNull();
+  expect(screen.getByRole('status', { name: 'Точність' })).toHaveTextContent(
+    '100%',
+  );
   expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
 
-  await user.click(screen.getByRole('button', { name: 'Ще раз' }));
+  const restart = screen.getByRole('button', { name: 'Ще раз' });
+  await user.click(restart);
 
   expect(screen.queryByRole('heading', { name: 'Тест завершено' })).toBeNull();
   expect(
@@ -212,6 +214,10 @@ it('finishes a word-count test on the last character', async () => {
   ).toBeEnabled();
   expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
   expect(screen.getByRole('radio', { name: '10' })).toBeChecked();
+  expect(restart).toHaveFocus();
+  expect(
+    screen.getByText('Натисніть на текст, щоб почати'),
+  ).toBeInTheDocument();
 });
 
 it('does not start a test from pasted text', async () => {
@@ -243,10 +249,11 @@ it('starts the countdown on first input and finishes without more typing', async
   expect(timer).toHaveTextContent('14 с');
 
   act(() => vi.advanceTimersByTime(14000));
-  expect(timer).toHaveTextContent('0 с');
-  expect(
-    screen.getByRole('textbox', { name: 'Введення тексту' }),
-  ).toBeDisabled();
+  expect(screen.queryByRole('timer')).toBeNull();
+  expect(screen.queryByRole('textbox')).toBeNull();
+  expect(screen.getByRole('status', { name: 'Тривалість' })).toHaveTextContent(
+    '15 с',
+  );
   expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
 });
 
@@ -430,8 +437,9 @@ it('discards an unconfirmed character when the countdown expires', async () => {
   act(() => vi.advanceTimersByTime(15000));
   fireEvent.compositionEnd(input, { data: 'ї' });
 
-  expect(input).toHaveValue('а');
-  expect(input).toBeDisabled();
-  expect(screen.getByRole('timer')).toHaveTextContent('0 с');
+  expect(input).not.toBeInTheDocument();
+  expect(screen.getByRole('status', { name: 'Raw WPM' })).toHaveTextContent(
+    '1',
+  );
   expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
 });
