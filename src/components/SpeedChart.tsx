@@ -19,7 +19,13 @@ const secondsFormat = new Intl.NumberFormat('uk-UA', {
   maximumFractionDigits: 3,
 });
 
+const axisSecondsFormat = new Intl.NumberFormat('uk-UA', {
+  maximumFractionDigits: 1,
+});
+
 export function SpeedChart({ samples }: SpeedChartProps) {
+  const axisFormat =
+    (samples.at(-1)?.second ?? 0) < 1 ? secondsFormat : axisSecondsFormat;
   return (
     <figure className={styles.figure} aria-label="Швидкість за секундами">
       <figcaption className={styles.caption}>
@@ -34,7 +40,7 @@ export function SpeedChart({ samples }: SpeedChartProps) {
             <ResponsiveContainer initialDimension={{ width: 280, height: 240 }}>
               <ComposedChart
                 data={samples}
-                margin={{ top: 12, right: 12, bottom: 0, left: 0 }}
+                margin={{ top: 12, right: 24, bottom: 0, left: 0 }}
                 accessibilityLayer
                 aria-label="Графік WPM і raw WPM. Стрілки ліворуч і праворуч переміщують між секундами."
               >
@@ -45,9 +51,13 @@ export function SpeedChart({ samples }: SpeedChartProps) {
                   domain={[0, 'dataMax']}
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: 'var(--muted)', fontSize: 11 }}
+                  tick={{
+                    fill: 'var(--muted)',
+                    fontSize: 11,
+                    fontFamily: 'system-ui, sans-serif',
+                  }}
                   tickFormatter={(value: number) =>
-                    `${secondsFormat.format(value)} с`
+                    `${axisFormat.format(value)} с`
                   }
                   minTickGap={24}
                   height={30}
@@ -57,7 +67,11 @@ export function SpeedChart({ samples }: SpeedChartProps) {
                   allowDecimals={false}
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: 'var(--muted)', fontSize: 11 }}
+                  tick={{
+                    fill: 'var(--muted)',
+                    fontSize: 11,
+                    fontFamily: 'system-ui, sans-serif',
+                  }}
                   width={40}
                 />
                 <Tooltip
