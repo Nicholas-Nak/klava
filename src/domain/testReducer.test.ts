@@ -5,6 +5,76 @@ import { createTest, testReducer } from './testReducer';
 const mode = { type: 'words', count: 10 } as const;
 const words = Array.from({ length: 10 }, () => 'кіт');
 
+it('records normalized input without mutating earlier typing events', () => {
+  const idle = createTest(words, mode);
+  const first = testReducer(idle, { type: 'input', value: 'і\u0308', at: 100 });
+  const second = testReducer(first, { type: 'input', value: 'їж', at: 300 });
+
+  expect(idle.events).toEqual([]);
+  expect(first.events).toEqual([
+    { type: 'input', elapsedMs: 0, wordIndex: 0, value: 'ї' },
+  ]);
+  expect(second.events).toEqual([
+    ...first.events,
+    { type: 'input', elapsedMs: 200, wordIndex: 0, value: 'їж' },
+  ]);
+});
+
+it('keeps the original mistake when a word is corrected or cleared', () => {
+  let state = createTest(words, mode);
+  for (const [value, at] of [
+    ['ко', 0],
+    ['к', 100],
+    ['кіт', 200],
+    ['', 300],
+  ] as const) {
+    state = testReducer(state, { type: 'input', value, at });
+  }
+
+  expect(state.events.map((event) => event.value)).toEqual([
+    'ко',
+    'к',
+    'кіт',
+    '',
+  ]);
+});
+
+it('records input against its current word and a monotonic elapsed time', () => {
+  let state = createTest(words, mode);
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 100 });
+  state = testReducer(state, { type: 'advance', at: 300 });
+  state = testReducer(state, { type: 'tick', at: 700 });
+  state = testReducer(state, { type: 'input', value: 'к', at: 500 });
+
+  expect(state.events.at(-1)).toEqual({
+    type: 'input',
+    elapsedMs: 600,
+    wordIndex: 1,
+    value: 'к',
+  });
+});
+
+it('does not record unchanged input, timer ticks or late characters', () => {
+  let state = createTest(['кіт'], { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'input', value: 'к', at: 0 });
+  const first = state;
+  state = testReducer(state, { type: 'input', value: 'к', at: 500 });
+  state = testReducer(state, { type: 'tick', at: 1000 });
+  state = testReducer(state, { type: 'input', value: 'кі', at: 15000 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.events).toHaveLength(1);
+  expect(state.events).toBe(first.events);
+});
+
+it('clears previous typing events when restarting a test', () => {
+  let state = createTest(words, mode);
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 0 });
+  state = testReducer(state, { type: 'reset', words, mode });
+
+  expect(state.events).toEqual([]);
+});
+
 it('waits for input without starting the clock', () => {
   const state = createTest(words, mode);
 
