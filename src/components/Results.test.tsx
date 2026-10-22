@@ -1,9 +1,13 @@
 import { render, screen, within } from '@testing-library/react';
-import { expect, it } from 'vitest';
+import { beforeAll, expect, it } from 'vitest';
 import { getTestResult } from '../domain/results';
 import { createTest, testReducer } from '../domain/testReducer';
 import type { TestOptions } from '../types';
 import { Results } from './Results';
+
+beforeAll(async () => {
+  await import('./SpeedChart');
+});
 
 const options: TestOptions = {
   language: 'uk',
@@ -12,13 +16,16 @@ const options: TestOptions = {
   mode: { type: 'time', seconds: 15 },
 };
 
-it('shows completed metrics and focuses the result heading', () => {
+it('shows completed metrics and focuses the result heading', async () => {
   let test = createTest(['кіт'], { type: 'time', seconds: 15 });
   test = testReducer(test, { type: 'input', value: 'ко', at: 0 });
   test = testReducer(test, { type: 'input', value: 'к', at: 100 });
   test = testReducer(test, { type: 'input', value: 'кіт', at: 200 });
   test = testReducer(test, { type: 'tick', at: 15000 });
   render(<Results result={getTestResult(test)} options={options} />);
+  expect(
+    await screen.findByRole('figure', { name: 'Швидкість за секундами' }),
+  ).toBeInTheDocument();
 
   expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
   expect(screen.getByRole('status', { name: 'WPM' })).toHaveTextContent('2');
@@ -46,7 +53,7 @@ it('shows completed metrics and focuses the result heading', () => {
   ).toEqual(['1', '0', '0', '1']);
 });
 
-it('leaves consistency unavailable for a short test and formats seconds in Ukrainian', () => {
+it('leaves consistency unavailable for a short test and formats seconds in Ukrainian', async () => {
   const words = Array<string>(10).fill('а');
   let test = createTest(words, { type: 'words', count: 10 });
   for (let index = 0; index < 10; index++) {
@@ -59,6 +66,9 @@ it('leaves consistency unavailable for a short test and formats seconds in Ukrai
       options={{ ...options, mode: test.mode }}
     />,
   );
+  expect(
+    await screen.findByRole('figure', { name: 'Швидкість за секундами' }),
+  ).toBeInTheDocument();
 
   expect(
     screen.getByRole('status', { name: 'Стабільність' }),
@@ -69,7 +79,7 @@ it('leaves consistency unavailable for a short test and formats seconds in Ukrai
   );
 });
 
-it('formats fractional accuracy without rounding it to a perfect score', () => {
+it('formats fractional accuracy without rounding it to a perfect score', async () => {
   const words = Array<string>(10).fill('кіт');
   let test = createTest(words, { type: 'words', count: 10 });
   for (let index = 0; index < 10; index++) {
@@ -92,6 +102,9 @@ it('formats fractional accuracy without rounding it to a perfect score', () => {
       }}
     />,
   );
+  expect(
+    await screen.findByRole('figure', { name: 'Швидкість за секундами' }),
+  ).toBeInTheDocument();
 
   expect(screen.getByRole('status', { name: 'Точність' })).toHaveTextContent(
     '94,9%',

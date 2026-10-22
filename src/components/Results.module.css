@@ -81,6 +81,15 @@
   border-top: 1px solid var(--line);
 }
 
+.chartLoading {
+  display: grid;
+  min-height: 300px;
+  margin-top: 32px;
+  place-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .breakdown h3 {
   margin: 0;
   font-size: 14px;

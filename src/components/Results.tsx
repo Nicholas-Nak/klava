@@ -1,8 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import type { TestResult } from '../domain/results';
 import type { TestOptions } from '../types';
-import { SpeedChart } from './SpeedChart';
 import styles from './Results.module.css';
+
+const SpeedChart = lazy(() =>
+  import('./SpeedChart').then((module) => ({ default: module.SpeedChart })),
+);
 
 interface ResultsProps {
   result: TestResult;
@@ -89,7 +92,15 @@ export function Results({ result, options }: ResultsProps) {
           </dd>
         </div>
       </dl>
-      <SpeedChart samples={result.samples} />
+      <Suspense
+        fallback={
+          <div className={styles.chartLoading} role="status">
+            Завантаження графіка…
+          </div>
+        }
+      >
+        <SpeedChart samples={result.samples} />
+      </Suspense>
       <section className={styles.breakdown} aria-label="Символи та виправлення">
         <h3>Символи та виправлення</h3>
         <dl>

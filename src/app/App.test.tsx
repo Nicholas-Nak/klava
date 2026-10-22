@@ -1,8 +1,12 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, expect, it, vi } from 'vitest';
 import * as textGenerator from '../domain/text';
 import { App } from './App';
+
+beforeAll(async () => {
+  await import('../components/SpeedChart');
+});
 
 afterEach(() => vi.useRealTimers());
 
@@ -198,6 +202,7 @@ it('finishes a word-count test on the last character', async () => {
 
   await user.click(area);
   await user.keyboard(text ?? '');
+  await screen.findByRole('figure', { name: 'Швидкість за секундами' });
 
   expect(screen.queryByRole('textbox')).toBeNull();
   expect(screen.getByRole('status', { name: 'Точність' })).toHaveTextContent(
@@ -248,7 +253,8 @@ it('starts the countdown on first input and finishes without more typing', async
   act(() => vi.advanceTimersByTime(1000));
   expect(timer).toHaveTextContent('14 с');
 
-  act(() => vi.advanceTimersByTime(14000));
+  await act(async () => vi.advanceTimersByTime(14000));
+  await screen.findByRole('figure', { name: 'Швидкість за секундами' });
   expect(screen.queryByRole('timer')).toBeNull();
   expect(screen.queryByRole('textbox')).toBeNull();
   expect(screen.getByRole('status', { name: 'Тривалість' })).toHaveTextContent(
@@ -434,7 +440,8 @@ it('discards an unconfirmed character when the countdown expires', async () => {
   const input = screen.getByRole('textbox', { name: 'Введення тексту' });
   fireEvent.compositionStart(input);
   fireEvent.change(input, { target: { value: 'аї' } });
-  act(() => vi.advanceTimersByTime(15000));
+  await act(async () => vi.advanceTimersByTime(15000));
+  await screen.findByRole('figure', { name: 'Швидкість за секундами' });
   fireEvent.compositionEnd(input, { data: 'ї' });
 
   expect(input).not.toBeInTheDocument();
