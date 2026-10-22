@@ -1,11 +1,39 @@
 // @vitest-environment node
 import { expect, it } from 'vitest';
 import {
+  calculateAccuracy,
   calculateWpm,
   countCorrectCharacters,
   countTypedCharacters,
 } from './metrics';
 import { createTest, testReducer } from './testReducer';
+
+it.each([
+  [3, 4, 75],
+  [19, 20, 95],
+  [1, 3, 33.3],
+  [10, 10, 100],
+  [0, 10, 0],
+  [-1, 10, 0],
+  [12, 10, 100],
+])(
+  'calculates accuracy for %i correct attempts out of %i',
+  (correct, total, expected) => {
+    expect(calculateAccuracy(correct, total)).toBe(expected);
+  },
+);
+
+it.each([
+  [0, 0],
+  [10, 0],
+  [NaN, 10],
+  [10, Infinity],
+])(
+  'returns zero accuracy for empty or invalid attempts (%s, %s)',
+  (correct, total) => {
+    expect(calculateAccuracy(correct, total)).toBe(0);
+  },
+);
 
 it('includes incorrect and extra characters in raw typing progress', () => {
   let state = createTest(['кіт'], { type: 'time', seconds: 30 });

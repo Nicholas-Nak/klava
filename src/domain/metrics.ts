@@ -1,6 +1,21 @@
 import { getCharacters } from './characters';
 import type { TestState } from './testReducer';
 
+export function calculateAccuracy(
+  correctAttempts: number,
+  totalAttempts: number,
+): number {
+  if (
+    !Number.isFinite(correctAttempts) ||
+    !Number.isFinite(totalAttempts) ||
+    totalAttempts <= 0
+  )
+    return 0;
+
+  const correct = Math.min(totalAttempts, Math.max(0, correctAttempts));
+  return Math.round((correct / totalAttempts) * 1000) / 10;
+}
+
 export function calculateWpm(characters: number, elapsedMs: number): number {
   if (
     !Number.isFinite(characters) ||
