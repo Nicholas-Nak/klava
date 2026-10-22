@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { expect, it } from 'vitest';
 import { SpeedChart } from './SpeedChart';
 
@@ -54,4 +55,39 @@ it('keeps the actual fractional second for a single-point result', async () => {
   expect(
     tooltip.getAllByRole('definition').map((element) => element.textContent),
   ).toEqual(['507', '507', '0']);
+});
+
+it('offers every sample in a table, including pauses and the final partial second', async () => {
+  const user = userEvent.setup();
+  render(
+    <SpeedChart
+      samples={[
+        { second: 1, wpm: 24, rawWpm: 36, errors: 1, typed: 3 },
+        { second: 2, wpm: 12, rawWpm: 18, errors: 0, typed: 0 },
+        { second: 2.4, wpm: 20, rawWpm: 25, errors: 1, typed: 2 },
+      ]}
+    />,
+  );
+  const summary = screen.getByText('Дані графіка');
+  const details = summary.closest('details');
+  expect(details).not.toHaveAttribute('open');
+  await user.click(summary);
+  expect(details).toHaveAttribute('open');
+  const table = within(
+    screen.getByRole('table', { name: 'Показники за секундами' }),
+  );
+  const rows = table.getAllByRole('row');
+  expect(rows).toHaveLength(4);
+  expect(
+    rows.slice(1).map((row) =>
+      within(row)
+        .getAllByRole('cell')
+        .map((cell) => cell.textContent),
+    ),
+  ).toEqual([
+    ['24', '36', '1'],
+    ['12', '18', '0'],
+    ['20', '25', '1'],
+  ]);
+  expect(table.getByRole('rowheader', { name: '2,4 с' })).toBeInTheDocument();
 });

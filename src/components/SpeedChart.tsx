@@ -157,6 +157,43 @@ export function SpeedChart({ samples }: SpeedChartProps) {
               Секунда з помилками
             </li>
           </ul>
+          <p className={styles.note}>
+            Середня швидкість від початку тесту. Стрілки ліворуч і праворуч —
+            деталі секунди.
+          </p>
+          <details className={styles.data}>
+            <summary>Дані графіка</summary>
+            <div
+              className={styles.tableScroll}
+              tabIndex={0}
+              role="region"
+              aria-label="Прокручування даних графіка"
+            >
+              <table>
+                <caption>Показники за секундами</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Час</th>
+                    <th scope="col">WPM</th>
+                    <th scope="col">Raw WPM</th>
+                    <th scope="col">Помилки</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {samples.map((sample) => (
+                    <tr key={sample.second}>
+                      <th scope="row">
+                        {secondsFormat.format(sample.second)} с
+                      </th>
+                      <td>{sample.wpm}</td>
+                      <td>{sample.rawWpm}</td>
+                      <td>{sample.errors}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
         </>
       )}
     </figure>

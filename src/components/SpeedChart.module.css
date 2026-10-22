@@ -113,3 +113,63 @@
 .tooltip dd {
   margin: 0;
 }
+
+.note {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.data {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.data summary {
+  min-height: 44px;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.tableScroll {
+  max-height: 280px;
+  overflow: auto;
+}
+
+.data summary:focus-visible,
+.tableScroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.data table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-test);
+  font-size: 11px;
+  text-align: right;
+}
+
+.data caption {
+  padding: 12px 8px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.data th,
+.data td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.data thead th {
+  color: var(--muted);
+}
+
+.data th:first-child {
+  text-align: left;
+}
