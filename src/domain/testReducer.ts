@@ -2,7 +2,7 @@ import type { TestMode } from '../types';
 import { charactersMatch } from './characters';
 
 export interface TypingEvent {
-  type: 'input';
+  type: 'input' | 'submit';
   elapsedMs: number;
   wordIndex: number;
   value: string;
@@ -99,8 +99,24 @@ export function testReducer(state: TestState, action: TestAction): TestState {
       )
         return state;
       return { ...state, words: [...state.words, ...action.words] };
-    case 'advance':
-      return completeWord(state, action.at);
+    case 'advance': {
+      if (state.phase !== 'running' || state.input === '') return state;
+      return completeWord(
+        {
+          ...state,
+          events: [
+            ...state.events,
+            {
+              type: 'submit',
+              elapsedMs: Math.max(state.elapsedMs, action.at - state.startedAt),
+              wordIndex: state.completed.length,
+              value: state.input,
+            },
+          ],
+        },
+        action.at,
+      );
+    }
     case 'tick': {
       if (state.phase !== 'running') return state;
       const elapsedMs = Math.max(state.elapsedMs, action.at - state.startedAt);

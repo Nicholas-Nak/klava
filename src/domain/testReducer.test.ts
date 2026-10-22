@@ -75,6 +75,65 @@ it('clears previous typing events when restarting a test', () => {
   expect(state.events).toEqual([]);
 });
 
+it('records an accepted Space with the submitted word and elapsed time', () => {
+  let state = createTest(words, mode);
+  state = testReducer(state, { type: 'input', value: 'кі', at: 100 });
+  const before = state;
+  state = testReducer(state, { type: 'advance', at: 350 });
+
+  expect(state.events.at(-1)).toEqual({
+    type: 'submit',
+    elapsedMs: 250,
+    wordIndex: 0,
+    value: 'кі',
+  });
+  expect(before.events).toHaveLength(1);
+  expect(state.completed).toEqual(['кі']);
+});
+
+it('does not record empty or late word submissions', () => {
+  let state = createTest(words, { type: 'time', seconds: 15 });
+  state = testReducer(state, { type: 'advance', at: 0 });
+  expect(state.events).toEqual([]);
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 100 });
+  state = testReducer(state, { type: 'advance', at: 200 });
+  const before = state;
+  state = testReducer(state, { type: 'advance', at: 300 });
+  expect(state.events).toBe(before.events);
+  state = testReducer(state, { type: 'input', value: 'к', at: 400 });
+  state = testReducer(state, { type: 'advance', at: 15100 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.events.filter((event) => event.type === 'submit')).toHaveLength(
+    1,
+  );
+});
+
+it('does not invent a Space when the last correct word finishes automatically', () => {
+  let state = startLastWord();
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 1000 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.events.filter((event) => event.type === 'submit')).toHaveLength(
+    9,
+  );
+  expect(state.events.at(-1)?.type).toBe('input');
+});
+
+it('records the final submitted mistake even when it ends the test', () => {
+  let state = startLastWord();
+  state = testReducer(state, { type: 'input', value: 'ко', at: 1000 });
+  state = testReducer(state, { type: 'advance', at: 1100 });
+
+  expect(state.phase).toBe('finished');
+  expect(state.events.at(-1)).toEqual({
+    type: 'submit',
+    elapsedMs: 1100,
+    wordIndex: 9,
+    value: 'ко',
+  });
+});
+
 it('waits for input without starting the clock', () => {
   const state = createTest(words, mode);
 
