@@ -1,6 +1,22 @@
 import { getCharacters } from './characters';
 import type { TestState } from './testReducer';
 
+export function calculateConsistency(speeds: readonly number[]): number | null {
+  if (
+    speeds.length < 2 ||
+    speeds.some((speed) => !Number.isFinite(speed) || speed < 0)
+  )
+    return null;
+
+  const mean = speeds.reduce((sum, speed) => sum + speed / speeds.length, 0);
+  if (mean === 0) return 0;
+  const relativeVariance =
+    speeds.reduce((sum, speed) => sum + (speed / mean - 1) ** 2, 0) /
+    speeds.length;
+  const variation = Math.sqrt(relativeVariance);
+  return Math.round(Math.max(0, 1 - variation) * 1000) / 10;
+}
+
 export function calculateAccuracy(
   correctAttempts: number,
   totalAttempts: number,

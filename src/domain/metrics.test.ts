@@ -2,11 +2,36 @@
 import { expect, it } from 'vitest';
 import {
   calculateAccuracy,
+  calculateConsistency,
   calculateWpm,
   countCorrectCharacters,
   countTypedCharacters,
 } from './metrics';
 import { createTest, testReducer } from './testReducer';
+
+it.each([
+  { speeds: [60, 60, 60], expected: 100 },
+  { speeds: [30, 90], expected: 50 },
+  { speeds: [40, 80], expected: 66.7 },
+  { speeds: [0, 120], expected: 0 },
+  { speeds: [0, 0], expected: 0 },
+  { speeds: [0, 0, 120], expected: 0 },
+])('calculates consistency for $speeds', ({ speeds, expected }) => {
+  expect(calculateConsistency(speeds)).toBe(expected);
+});
+
+it.each([
+  { speeds: [] },
+  { speeds: [60] },
+  { speeds: [60, NaN] },
+  { speeds: [60, Infinity] },
+  { speeds: [60, -1] },
+])(
+  'does not estimate consistency from insufficient or invalid samples $speeds',
+  ({ speeds }) => {
+    expect(calculateConsistency(speeds)).toBeNull();
+  },
+);
 
 it.each([
   [3, 4, 75],
