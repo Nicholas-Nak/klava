@@ -450,3 +450,50 @@ it('discards an unconfirmed character when the countdown expires', async () => {
   );
   expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
 });
+
+it('retains corrected attempts in a result and clears them for the next test', async () => {
+  vi.spyOn(textGenerator, 'generateText').mockImplementation((count) =>
+    Array<string>(count).fill('кіт'),
+  );
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: '10' }));
+
+  for (const corrected of [true, false]) {
+    await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+    const input = screen.getByRole('textbox', { name: 'Введення тексту' });
+    if (corrected) {
+      fireEvent.change(input, { target: { value: 'x' } });
+      fireEvent.change(input, { target: { value: '' } });
+    }
+    for (let word = 0; word < 9; word++) {
+      fireEvent.change(input, { target: { value: 'кіт' } });
+      fireEvent.keyDown(input, { key: ' ' });
+    }
+    fireEvent.change(input, { target: { value: 'кі' } });
+    act(() => vi.advanceTimersByTime(2000));
+    fireEvent.change(input, { target: { value: 'кіт' } });
+    await screen.findByRole('figure', { name: 'Швидкість за секундами' });
+
+    expect(screen.getByRole('status', { name: 'WPM' })).toHaveTextContent(
+      /^234$/,
+    );
+    expect(screen.getByRole('status', { name: 'Raw WPM' })).toHaveTextContent(
+      /^234$/,
+    );
+    expect(screen.getByRole('status', { name: 'Точність' })).toHaveTextContent(
+      corrected ? '97,5%' : '100%',
+    );
+    expect(screen.getByRole('status', { name: 'Помилки' })).toHaveTextContent(
+      corrected ? '1' : '0',
+    );
+    expect(
+      within(screen.getByRole('region', { name: 'Символи та виправлення' }))
+        .getAllByRole('definition')
+        .map((element) => element.textContent),
+    ).toEqual(corrected ? ['1', '0', '0', '1'] : ['0', '0', '0', '0']);
+
+    await user.click(screen.getByRole('button', { name: 'Ще раз' }));
+  }
+});
