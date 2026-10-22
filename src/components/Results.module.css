@@ -120,6 +120,40 @@
   margin: 16px 0 0;
 }
 
+.explanation {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.explanation summary {
+  min-height: 44px;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.explanation summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.explanation dl {
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+  margin: 12px 0 16px;
+}
+
+.explanation dt {
+  font-family: var(--font-test);
+}
+
+.explanation dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
 @keyframes enter {
   from {
     opacity: 0;
