@@ -78,3 +78,38 @@
   font-size: 14px;
   line-height: 1.6;
 }
+
+.tooltip {
+  min-width: 144px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-test);
+  font-size: 12px;
+}
+
+.tooltip p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.tooltip dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.tooltip dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.tooltip dt {
+  color: var(--muted);
+}
+
+.tooltip dd {
+  margin: 0;
+}

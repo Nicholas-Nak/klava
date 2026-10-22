@@ -63,14 +63,34 @@ export function SpeedChart({ samples }: SpeedChartProps) {
                 <Tooltip
                   isAnimationActive={false}
                   cursor={{ stroke: 'var(--line)' }}
-                  labelFormatter={(value) =>
-                    `${secondsFormat.format(Number(value))} с`
-                  }
-                  contentStyle={{
-                    background: 'var(--paper)',
-                    border: '1px solid var(--line)',
-                    color: 'var(--ink)',
-                    fontSize: 12,
+                  content={({ active, label }) => {
+                    const sample = active
+                      ? samples.find((point) => point.second === Number(label))
+                      : undefined;
+                    if (!sample) return null;
+                    return (
+                      <div
+                        className={styles.tooltip}
+                        role="status"
+                        aria-label="Деталі секунди"
+                      >
+                        <p>{secondsFormat.format(sample.second)} с</p>
+                        <dl>
+                          <div>
+                            <dt>WPM</dt>
+                            <dd>{sample.wpm}</dd>
+                          </div>
+                          <div>
+                            <dt>Raw WPM</dt>
+                            <dd>{sample.rawWpm}</dd>
+                          </div>
+                          <div>
+                            <dt>Помилки</dt>
+                            <dd>{sample.errors}</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    );
                   }}
                 />
                 <Line
@@ -105,10 +125,15 @@ export function SpeedChart({ samples }: SpeedChartProps) {
                       shape={({ cx, cy }) => {
                         if (cx === undefined || cy === undefined) return <g />;
                         return (
-                          <path
-                            className={styles.errorMark}
-                            d={`M${cx - 3},${cy - 3}l6,6m0,-6l-6,6`}
-                          />
+                          <g
+                            role="img"
+                            aria-label={`Помилки, ${secondsFormat.format(sample.second)} с: ${sample.errors}`}
+                          >
+                            <path
+                              className={styles.errorMark}
+                              d={`M${cx - 3},${cy - 3}l6,6m0,-6l-6,6`}
+                            />
+                          </g>
                         );
                       }}
                     />
