@@ -1,19 +1,30 @@
 import { getCharacters } from './characters';
 import type { TestState } from './testReducer';
 
-export function calculateWpm(
-  correctCharacters: number,
-  elapsedMs: number,
-): number {
+export function calculateWpm(characters: number, elapsedMs: number): number {
   if (
-    !Number.isFinite(correctCharacters) ||
+    !Number.isFinite(characters) ||
     !Number.isFinite(elapsedMs) ||
-    correctCharacters <= 0 ||
+    characters <= 0 ||
     elapsedMs <= 0
   )
     return 0;
 
-  return Math.round((correctCharacters / 5) * (60000 / elapsedMs));
+  return Math.round((characters / 5) * (60000 / elapsedMs));
+}
+
+function countSpaces(test: TestState): number {
+  return test.mode.type === 'words' && test.completed.length === test.mode.count
+    ? Math.max(0, test.completed.length - 1)
+    : test.completed.length;
+}
+
+export function countTypedCharacters(test: TestState): number {
+  let typed = Array.from(test.input.normalize('NFC')).length;
+  for (const input of test.completed) {
+    typed += Array.from(input.normalize('NFC')).length;
+  }
+  return typed + countSpaces(test);
 }
 
 function countWordCharacters(word: string, input: string): number {
@@ -33,9 +44,5 @@ export function countCorrectCharacters(test: TestState): number {
     correct += countWordCharacters(currentWord, test.input);
   }
 
-  const spaces =
-    test.mode.type === 'words' && test.completed.length === test.mode.count
-      ? Math.max(0, test.completed.length - 1)
-      : test.completed.length;
-  return correct + spaces;
+  return correct + countSpaces(test);
 }

@@ -1,7 +1,60 @@
 // @vitest-environment node
 import { expect, it } from 'vitest';
-import { calculateWpm, countCorrectCharacters } from './metrics';
+import {
+  calculateWpm,
+  countCorrectCharacters,
+  countTypedCharacters,
+} from './metrics';
 import { createTest, testReducer } from './testReducer';
+
+it('includes incorrect and extra characters in raw typing progress', () => {
+  let state = createTest(['кіт'], { type: 'time', seconds: 30 });
+  state = testReducer(state, { type: 'input', value: 'кот!', at: 0 });
+  state = testReducer(state, { type: 'tick', at: 1000 });
+
+  expect(countTypedCharacters(state)).toBe(4);
+  expect(calculateWpm(countTypedCharacters(state), state.elapsedMs)).toBe(48);
+  expect(calculateWpm(countCorrectCharacters(state), state.elapsedMs)).toBe(24);
+
+  state = testReducer(state, { type: 'input', value: 'кіт', at: 1000 });
+  expect(countTypedCharacters(state)).toBe(3);
+});
+
+it('counts actual spaces without counting skipped letters or untouched words', () => {
+  let state = createTest(['tree', 'house', 'garden'], {
+    type: 'time',
+    seconds: 30,
+  });
+  state = testReducer(state, { type: 'input', value: 'tr', at: 0 });
+  state = testReducer(state, { type: 'advance', at: 100 });
+  state = testReducer(state, { type: 'input', value: 'hose!', at: 200 });
+
+  expect(countTypedCharacters(state)).toBe(8);
+});
+
+it('counts normalized Ukrainian input as individual characters', () => {
+  let state = createTest(['ї’'], { type: 'time', seconds: 30 });
+  state = testReducer(state, { type: 'input', value: "і\u0308'", at: 0 });
+
+  expect(countTypedCharacters(state)).toBe(2);
+});
+
+it('does not include a final word-mode Space in raw progress', () => {
+  const words = Array<string>(10).fill('а');
+  let state = createTest(words, { type: 'words', count: 10 });
+  for (let index = 0; index < 10; index++) {
+    state = testReducer(state, {
+      type: 'input',
+      value: index === 9 ? 'а!' : 'а',
+      at: index * 100,
+    });
+    state = testReducer(state, { type: 'advance', at: index * 100 + 50 });
+  }
+
+  expect(state.phase).toBe('finished');
+  expect(countTypedCharacters(state)).toBe(20);
+  expect(countCorrectCharacters(state)).toBe(19);
+});
 
 it.each([
   [250, 30000, 100],
