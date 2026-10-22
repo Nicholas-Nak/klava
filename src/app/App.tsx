@@ -102,7 +102,7 @@ export function App() {
         ].join(' ')}
       >
         {result ? (
-          <Results result={result} />
+          <Results result={result} options={{ ...options, mode: test.mode }} />
         ) : (
           <>
             <div

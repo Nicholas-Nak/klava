@@ -21,6 +21,14 @@
   text-underline-offset: 0.35em;
 }
 
+.context {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-family: var(--font-test);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -65,6 +73,42 @@
   margin-top: 6px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.breakdown {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.breakdown h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.breakdown dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  margin: 20px 0 0;
+}
+
+.breakdown dt,
+.breakdown p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.breakdown dd {
+  margin: 6px 0 0;
+  font-family: var(--font-test);
+  font-size: 18px;
+}
+
+.breakdown p {
+  margin: 16px 0 0;
 }
 
 @keyframes enter {
