@@ -14,3 +14,9 @@ export interface TextOptions {
 export interface TestOptions extends TextOptions {
   mode: TestMode;
 }
+
+export type PracticeMode = 'standard' | 'weak-spots';
+
+export interface SessionOptions extends TestOptions {
+  practice: PracticeMode;
+}
