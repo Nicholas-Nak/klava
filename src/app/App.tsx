@@ -7,6 +7,8 @@ import { TypingArea } from '../components/TypingArea';
 import { generateText } from '../domain/text';
 import { createTest, testReducer } from '../domain/testReducer';
 import { getTestResult } from '../domain/results';
+import { createHistoryEntry } from '../domain/history';
+import { useHistoryStore } from '../stores/historyStore';
 import type { TestMode, TextOptions, TimeLimit, WordCount } from '../types';
 import styles from './App.module.css';
 
@@ -22,6 +24,8 @@ export function App() {
   const [mode, setMode] = useState<TestMode['type']>('words');
   const [seconds, setSeconds] = useState<TimeLimit>(30);
   const [focused, setFocused] = useState(false);
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
+  const addEntry = useHistoryStore((state) => state.addEntry);
   const [test, dispatch] = useReducer(testReducer, undefined, () =>
     createTest(generateText(25, initialOptions), { type: 'words', count: 25 }),
   );
@@ -51,9 +55,22 @@ export function App() {
     });
   }, [test.phase, test.mode.type, test.words, test.completed.length, options]);
 
+  useEffect(() => {
+    if (test.phase !== 'finished') return;
+    addEntry(
+      createHistoryEntry(
+        test,
+        { ...options, mode: test.mode, practice: 'standard' },
+        sessionId,
+        new Date().toISOString(),
+      ),
+    );
+  }, [test, options, sessionId, addEntry]);
+
   function resetTest(nextMode = selectedMode, nextOptions = options) {
     const length = nextMode.type === 'words' ? nextMode.count : 100;
     setFocused(false);
+    setSessionId(crypto.randomUUID());
     dispatch({
       type: 'reset',
       words: generateText(length, nextOptions),

@@ -1,13 +1,20 @@
+import { StrictMode } from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import * as textGenerator from '../domain/text';
 import { App } from './App';
+import { useHistoryStore } from '../stores/historyStore';
+import { HISTORY_STORAGE_KEY } from '../stores/historyStorage';
 
 vi.mock('../components/SpeedChart', () => ({
   SpeedChart: () => <figure aria-label="Швидкість за секундами" />,
 }));
 
+beforeEach(() => {
+  localStorage.clear();
+  useHistoryStore.setState({ entries: [], storageAvailable: true });
+});
 afterEach(() => vi.useRealTimers());
 
 it('renders the application', () => {
@@ -496,4 +503,42 @@ it('retains corrected attempts in a result and clears them for the next test', a
 
     await user.click(screen.getByRole('button', { name: 'Ще раз' }));
   }
+});
+
+it('records a completed countdown once and creates another identity after restart', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  for (let round = 1; round <= 2; round++) {
+    await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+    await user.keyboard('а');
+    await act(async () => vi.advanceTimersByTime(15000));
+    expect(useHistoryStore.getState().entries).toHaveLength(round);
+    const saved = useHistoryStore.getState().entries[0];
+    expect(saved?.options.mode).toEqual({ type: 'time', seconds: 15 });
+    expect(saved?.options.language).toBe('uk');
+    expect(saved?.result.elapsedMs).toBe(15000);
+    expect(localStorage.getItem(HISTORY_STORAGE_KEY)).toContain(saved?.id);
+    await user.click(screen.getByRole('button', { name: 'Ще раз' }));
+  }
+  const entries = useHistoryStore.getState().entries;
+  expect(entries[0]?.id).not.toBe(entries[1]?.id);
+});
+
+it('does not record idle or abandoned tests', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Інший текст' }));
+  expect(useHistoryStore.getState().entries).toEqual([]);
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('кі');
+  await user.tab();
+  await user.click(screen.getByRole('button', { name: 'Інший текст' }));
+  expect(useHistoryStore.getState().entries).toEqual([]);
 });
