@@ -44,6 +44,7 @@ it('round-trips a completed result and mistake profile', () => {
   expect(saveHistory(storage, [saved])).toBe(true);
   expect(loadHistory(storage)).toEqual({
     entries: [saved],
+    bests: [saved],
     storageAvailable: true,
   });
   expect(storage.getItem(HISTORY_STORAGE_KEY)).toBeTruthy();
@@ -149,12 +150,17 @@ it('copies supported data and discards unexpected transcripts and samples', () =
 it('recovers from malformed JSON without treating readable storage as blocked', () => {
   const storage = memoryStorage();
   storage.setItem(HISTORY_STORAGE_KEY, '{');
-  expect(loadHistory(storage)).toEqual({ entries: [], storageAvailable: true });
+  expect(loadHistory(storage)).toEqual({
+    entries: [],
+    bests: [],
+    storageAvailable: true,
+  });
 });
 
 it('handles unavailable storage and quota failures without throwing', () => {
   expect(loadHistory(undefined)).toEqual({
     entries: [],
+    bests: [],
     storageAvailable: false,
   });
   expect(saveHistory(undefined, [entry()])).toBe(false);
@@ -168,6 +174,7 @@ it('handles unavailable storage and quota failures without throwing', () => {
   };
   expect(loadHistory(blocked)).toEqual({
     entries: [],
+    bests: [],
     storageAvailable: false,
   });
   expect(saveHistory(blocked, [entry()])).toBe(false);
@@ -180,4 +187,29 @@ it('caps written history as well as restored history', () => {
   );
   saveHistory(storage, records);
   expect(loadHistory(storage).entries).toHaveLength(HISTORY_LIMIT);
+});
+
+it('recovers records from older storage without a separate bests field', () => {
+  const storage = memoryStorage();
+  const saved = entry();
+  storage.setItem(
+    HISTORY_STORAGE_KEY,
+    JSON.stringify({ version: 1, entries: [saved] }),
+  );
+  expect(loadHistory(storage).bests).toEqual([saved]);
+});
+
+it('ignores malformed record snapshots without losing recent history', () => {
+  const storage = memoryStorage();
+  const saved = entry();
+  storage.setItem(
+    HISTORY_STORAGE_KEY,
+    JSON.stringify({
+      version: 1,
+      entries: [saved],
+      bests: [null, { id: 'invalid' }],
+    }),
+  );
+  expect(loadHistory(storage).entries).toEqual([saved]);
+  expect(loadHistory(storage).bests).toEqual([saved]);
 });

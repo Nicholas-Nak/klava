@@ -1,3 +1,4 @@
+import { getPersonalBests } from '../domain/records';
 import type { HistoryEntry } from '../domain/history';
 import type { MistakeCount, MistakeProfile } from '../domain/mistakes';
 import type { SessionOptions, TestMode } from '../types';
@@ -148,30 +149,44 @@ export function parseHistory(value: unknown): HistoryEntry[] {
 }
 
 export function loadHistory(storage: HistoryStorage | undefined) {
-  if (!storage) return { entries: [], storageAvailable: false };
+  if (!storage) return { entries: [], bests: [], storageAvailable: false };
   let raw: string | null;
   try {
     raw = storage.getItem(HISTORY_STORAGE_KEY);
   } catch {
-    return { entries: [], storageAvailable: false };
+    return { entries: [], bests: [], storageAvailable: false };
   }
   try {
     const value: unknown = raw ? JSON.parse(raw) : null;
-    return { entries: parseHistory(value), storageAvailable: true };
+    const entries = parseHistory(value);
+    const savedBests =
+      isObject(value) && value.version === 1
+        ? parseHistory({ version: 1, entries: value.bests })
+        : [];
+    return {
+      entries,
+      bests: getPersonalBests([...savedBests, ...entries]),
+      storageAvailable: true,
+    };
   } catch {
-    return { entries: [], storageAvailable: true };
+    return { entries: [], bests: [], storageAvailable: true };
   }
 }
 
 export function saveHistory(
   storage: HistoryStorage | undefined,
   entries: readonly HistoryEntry[],
+  bests = getPersonalBests(entries),
 ): boolean {
   if (!storage) return false;
   try {
     storage.setItem(
       HISTORY_STORAGE_KEY,
-      JSON.stringify({ version: 1, entries: entries.slice(0, HISTORY_LIMIT) }),
+      JSON.stringify({
+        version: 1,
+        entries: entries.slice(0, HISTORY_LIMIT),
+        bests,
+      }),
     );
     return true;
   } catch {

@@ -97,3 +97,18 @@ it('reports recovery when a later storage write succeeds', () => {
   expect(store.getState().storageAvailable).toBe(true);
   expect(store.getState().entries).toHaveLength(2);
 });
+
+it('preserves a personal record after it leaves recent history and the page reloads', () => {
+  const storage = memoryStorage();
+  const store = createHistoryStore(storage);
+  const best = entry('old-record');
+  best.result.wpm = 100;
+  store.getState().addEntry(best);
+  for (let i = 0; i < HISTORY_LIMIT; i++)
+    store.getState().addEntry(entry(String(i)));
+  expect(store.getState().entries.some(({ id }) => id === 'old-record')).toBe(
+    false,
+  );
+  expect(store.getState().bests).toEqual([best]);
+  expect(createHistoryStore(storage).getState().bests).toEqual([best]);
+});

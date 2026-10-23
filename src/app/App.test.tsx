@@ -24,7 +24,7 @@ vi.mock('../components/SpeedChart', () => ({
 
 beforeEach(() => {
   localStorage.clear();
-  useHistoryStore.setState({ entries: [], storageAvailable: true });
+  useHistoryStore.setState({ entries: [], bests: [], storageAvailable: true });
 });
 afterEach(() => vi.useRealTimers());
 
