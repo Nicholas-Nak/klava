@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import type { TestResult } from '../domain/results';
-import type { TestOptions } from '../types';
+import type { PracticeMode, TestOptions } from '../types';
 import styles from './Results.module.css';
 
 const SpeedChart = lazy(() =>
@@ -10,6 +10,7 @@ const SpeedChart = lazy(() =>
 interface ResultsProps {
   result: TestResult;
   options: TestOptions;
+  practice?: PracticeMode;
 }
 
 const numberFormat = new Intl.NumberFormat('uk-UA', {
@@ -17,7 +18,11 @@ const numberFormat = new Intl.NumberFormat('uk-UA', {
   useGrouping: false,
 });
 
-export function Results({ result, options }: ResultsProps) {
+export function Results({
+  result,
+  options,
+  practice = 'standard',
+}: ResultsProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     headingRef.current?.focus();
@@ -34,6 +39,7 @@ export function Results({ result, options }: ResultsProps) {
         {options.mode.type === 'time'
           ? `${options.mode.seconds} с`
           : `${options.mode.count} слів`}
+        {practice === 'weak-spots' && ' · слабкі місця'}
         {options.punctuation && ' · пунктуація'}
         {options.numbers && ' · цифри'}
       </p>

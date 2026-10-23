@@ -113,3 +113,10 @@
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
+
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 20px 40px;
+}

@@ -1,3 +1,7 @@
+import { PracticeControls } from '../components/PracticeControls';
+import { WeakSpotsPreview } from '../components/WeakSpotsPreview';
+import { getPracticeTargets, type WeakSpot } from '../domain/weakSpots';
+import { generateWeakText } from '../domain/weakText';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router';
 import { HistoryPage } from '../pages/HistoryPage';
 import { useEffect, useReducer, useState } from 'react';
@@ -11,7 +15,13 @@ import { createTest, testReducer } from '../domain/testReducer';
 import { getTestResult } from '../domain/results';
 import { createHistoryEntry } from '../domain/history';
 import { useHistoryStore } from '../stores/historyStore';
-import type { TestMode, TextOptions, TimeLimit, WordCount } from '../types';
+import type {
+  PracticeMode,
+  TestMode,
+  TextOptions,
+  TimeLimit,
+  WordCount,
+} from '../types';
 import styles from './App.module.css';
 
 const initialOptions: TextOptions = {
@@ -22,6 +32,8 @@ const initialOptions: TextOptions = {
 
 export function App() {
   const [options, setOptions] = useState(initialOptions);
+  const [practice, setPractice] = useState<PracticeMode>('standard');
+  const [targets, setTargets] = useState<WeakSpot[]>([]);
   const [count, setCount] = useState<WordCount>(25);
   const [mode, setMode] = useState<TestMode['type']>('words');
   const [seconds, setSeconds] = useState<TimeLimit>(30);
@@ -55,31 +67,68 @@ export function App() {
       return;
     dispatch({
       type: 'append',
-      words: generateText(100, options, Math.random, test.words.at(-1)),
+      words:
+        practice === 'weak-spots'
+          ? generateWeakText(
+              100,
+              options,
+              targets,
+              Math.random,
+              test.words.at(-1),
+            )
+          : generateText(100, options, Math.random, test.words.at(-1)),
     });
-  }, [test.phase, test.mode.type, test.words, test.completed.length, options]);
+  }, [
+    test.phase,
+    test.mode.type,
+    test.words,
+    test.completed.length,
+    options,
+    practice,
+    targets,
+  ]);
 
   useEffect(() => {
     if (test.phase !== 'finished') return;
     addEntry(
       createHistoryEntry(
         test,
-        { ...options, mode: test.mode, practice: 'standard' },
+        { ...options, mode: test.mode, practice },
         sessionId,
         new Date().toISOString(),
       ),
     );
-  }, [test, options, sessionId, addEntry]);
+  }, [test, options, practice, sessionId, addEntry]);
 
-  function resetTest(nextMode = selectedMode, nextOptions = options) {
+  function resetTest(
+    nextMode = selectedMode,
+    nextOptions = options,
+    nextPractice = practice,
+  ) {
     const length = nextMode.type === 'words' ? nextMode.count : 100;
+    const nextTargets =
+      nextPractice === 'weak-spots'
+        ? getPracticeTargets(
+            useHistoryStore.getState().entries,
+            nextOptions.language,
+          )
+        : [];
+    setTargets(nextTargets);
     setFocused(false);
     setSessionId(crypto.randomUUID());
     dispatch({
       type: 'reset',
-      words: generateText(length, nextOptions),
+      words:
+        nextPractice === 'weak-spots'
+          ? generateWeakText(length, nextOptions, nextTargets)
+          : generateText(length, nextOptions),
       mode: nextMode,
     });
+  }
+
+  function updatePractice(nextPractice: PracticeMode) {
+    setPractice(nextPractice);
+    resetTest(selectedMode, options, nextPractice);
   }
 
   function updateOptions(nextOptions: TextOptions) {
@@ -138,6 +187,7 @@ export function App() {
                 {result ? (
                   <Results
                     result={result}
+                    practice={practice}
                     options={{ ...options, mode: test.mode }}
                   />
                 ) : (
@@ -150,19 +200,32 @@ export function App() {
                       aria-hidden={focusMode}
                       inert={focusMode}
                     >
-                      <ModeControls
-                        mode={mode}
-                        count={count}
-                        seconds={seconds}
-                        onModeChange={updateMode}
-                        onCountChange={updateCount}
-                        onSecondsChange={updateSeconds}
-                      />
+                      <div className={styles.modes}>
+                        <ModeControls
+                          mode={mode}
+                          count={count}
+                          seconds={seconds}
+                          onModeChange={updateMode}
+                          onCountChange={updateCount}
+                          onSecondsChange={updateSeconds}
+                        />
+                        <PracticeControls
+                          practice={practice}
+                          onChange={updatePractice}
+                        />
+                      </div>
                       <TextControls
                         options={options}
                         onChange={updateOptions}
                       />
                     </div>
+                    {practice === 'weak-spots' && (
+                      <WeakSpotsPreview
+                        targets={targets}
+                        language={options.language}
+                        hidden={test.phase !== 'idle'}
+                      />
+                    )}
                     <TestStatus test={test} />
                     <TypingArea
                       test={test}
