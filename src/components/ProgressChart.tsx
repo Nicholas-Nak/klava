@@ -111,8 +111,13 @@ export function ProgressChart({ days }: { days: DailyProgress[] }) {
               name="Найкраща WPM"
               stroke="var(--accent)"
               strokeDasharray="4 4"
-              dot={{ r: 3, strokeWidth: 1, fill: 'var(--paper)' }}
-              activeDot={{ r: 4 }}
+              dot={{
+                r: 3,
+                strokeWidth: 1,
+                fill: 'var(--paper)',
+                strokeDasharray: 'none',
+              }}
+              activeDot={{ r: 4, strokeDasharray: 'none' }}
               isAnimationActive={false}
             />
           </LineChart>
