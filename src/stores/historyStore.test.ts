@@ -112,3 +112,17 @@ it('preserves a personal record after it leaves recent history and the page relo
   expect(store.getState().bests).toEqual([best]);
   expect(createHistoryStore(storage).getState().bests).toEqual([best]);
 });
+
+it('does not replace the record date when the same result is repeated', () => {
+  const storage = memoryStorage();
+  const store = createHistoryStore(storage);
+  const first = entry('first');
+  const repeated = {
+    ...entry('repeated'),
+    completedAt: '2026-10-24T16:00:00.000Z',
+  };
+  store.getState().addEntry(first);
+  store.getState().addEntry(repeated);
+  expect(store.getState().entries[0]).toEqual(repeated);
+  expect(createHistoryStore(storage).getState().bests).toEqual([first]);
+});

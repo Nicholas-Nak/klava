@@ -80,3 +80,16 @@ it('handles empty history and zero-speed results without mutating entries', () =
   ]);
   expect(entries).toEqual(before);
 });
+
+it('preserves the earliest achievement when speed and accuracy are tied', () => {
+  const first = {
+    ...entry('first', 60, {}, 95),
+    completedAt: '2026-10-20T12:00:00Z',
+  };
+  const repeated = {
+    ...entry('repeated', 60, {}, 95),
+    completedAt: '2026-10-23T12:00:00Z',
+  };
+  expect(getPersonalBests([repeated, first])).toEqual([first]);
+  expect(getPersonalBests([first, repeated])).toEqual([first]);
+});

@@ -25,7 +25,10 @@ export function getPersonalBests(
       !best ||
       entry.result.wpm > best.result.wpm ||
       (entry.result.wpm === best.result.wpm &&
-        entry.result.accuracy > best.result.accuracy)
+        entry.result.accuracy > best.result.accuracy) ||
+      (entry.result.wpm === best.result.wpm &&
+        entry.result.accuracy === best.result.accuracy &&
+        Date.parse(entry.completedAt) < Date.parse(best.completedAt))
     )
       bests.set(key, entry);
   }
