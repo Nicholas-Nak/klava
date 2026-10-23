@@ -1,13 +1,13 @@
 import { render, screen, within } from '@testing-library/react';
-import { beforeAll, expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { getTestResult } from '../domain/results';
 import { createTest, testReducer } from '../domain/testReducer';
 import type { TestOptions } from '../types';
 import { Results } from './Results';
 
-beforeAll(async () => {
-  await import('./SpeedChart');
-});
+vi.mock('./SpeedChart', () => ({
+  SpeedChart: () => <figure aria-label="Швидкість за секундами" />,
+}));
 
 const options: TestOptions = {
   language: 'uk',

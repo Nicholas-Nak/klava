@@ -1,12 +1,12 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeAll, expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import * as textGenerator from '../domain/text';
 import { App } from './App';
 
-beforeAll(async () => {
-  await import('../components/SpeedChart');
-});
+vi.mock('../components/SpeedChart', () => ({
+  SpeedChart: () => <figure aria-label="Швидкість за секундами" />,
+}));
 
 afterEach(() => vi.useRealTimers());
 
