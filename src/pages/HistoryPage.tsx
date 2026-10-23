@@ -1,3 +1,4 @@
+import { PersonalBests } from '../components/PersonalBests';
 import { useEffect, useRef, useState } from 'react';
 import { HistoryTable } from '../components/HistoryTable';
 import { useHistoryStore } from '../stores/historyStore';
@@ -11,6 +12,7 @@ export function HistoryPage({
 }) {
   const [language, setLanguage] = useState(initialLanguage);
   const entries = useHistoryStore((state) => state.entries);
+  const bests = useHistoryStore((state) => state.bests);
   const storageAvailable = useHistoryStore((state) => state.storageAvailable);
   const heading = useRef<HTMLHeadingElement>(null);
   const filtered = entries.filter(
@@ -48,6 +50,9 @@ export function HistoryPage({
           лише до перезавантаження сторінки.
         </p>
       )}
+      <PersonalBests
+        entries={bests.filter((entry) => entry.options.language === language)}
+      />
       <HistoryTable entries={filtered} />
     </section>
   );
