@@ -1,3 +1,5 @@
+import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router';
+import { HistoryPage } from '../pages/HistoryPage';
 import { useEffect, useReducer, useState } from 'react';
 import { ModeControls } from '../components/ModeControls';
 import { Results } from '../components/Results';
@@ -32,7 +34,9 @@ export function App() {
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
   const result = test.phase === 'finished' ? getTestResult(test) : null;
-  const focusMode = test.phase === 'running' && focused;
+  const location = useLocation();
+  const focusMode =
+    location.pathname === '/' && test.phase === 'running' && focused;
 
   useEffect(() => {
     if (test.phase !== 'running') return;
@@ -111,78 +115,111 @@ export function App() {
       >
         <h1 className={styles.brand}>Klava</h1>
         <p className={styles.description}>Тренажер друку</p>
+        <nav className={styles.navigation} aria-label="Основна навігація">
+          <NavLink to="/" end>
+            Тренування
+          </NavLink>
+          <NavLink to="/history">Історія</NavLink>
+        </nav>
       </header>
       <main
         className={[
           styles.workspace,
-          result ? styles.resultWorkspace : '',
+          result || location.pathname === '/history'
+            ? styles.resultWorkspace
+            : '',
         ].join(' ')}
       >
-        {result ? (
-          <Results result={result} options={{ ...options, mode: test.mode }} />
-        ) : (
-          <>
-            <div
-              className={[styles.toolbar, focusMode ? styles.hidden : ''].join(
-                ' ',
-              )}
-              aria-hidden={focusMode}
-              inert={focusMode}
-            >
-              <ModeControls
-                mode={mode}
-                count={count}
-                seconds={seconds}
-                onModeChange={updateMode}
-                onCountChange={updateCount}
-                onSecondsChange={updateSeconds}
-              />
-              <TextControls options={options} onChange={updateOptions} />
-            </div>
-            <TestStatus test={test} />
-            <TypingArea
-              test={test}
-              language={options.language}
-              focused={focused}
-              onFocusChange={setFocused}
-              onInput={(value) =>
-                dispatch({ type: 'input', value, at: performance.now() })
-              }
-              onAdvance={() =>
-                dispatch({ type: 'advance', at: performance.now() })
-              }
-            />
-          </>
-        )}
-        <div
-          className={[
-            styles.actions,
-            focusMode ? styles.quietActions : '',
-          ].join(' ')}
-        >
-          <button
-            className={styles.refreshButton}
-            type="button"
-            onClick={() => resetTest()}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M20 11a8 8 0 1 0-2.4 6M20 4v7h-7"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {test.phase === 'finished' ? 'Ще раз' : 'Інший текст'}
-          </button>
-        </div>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                {result ? (
+                  <Results
+                    result={result}
+                    options={{ ...options, mode: test.mode }}
+                  />
+                ) : (
+                  <>
+                    <div
+                      className={[
+                        styles.toolbar,
+                        focusMode ? styles.hidden : '',
+                      ].join(' ')}
+                      aria-hidden={focusMode}
+                      inert={focusMode}
+                    >
+                      <ModeControls
+                        mode={mode}
+                        count={count}
+                        seconds={seconds}
+                        onModeChange={updateMode}
+                        onCountChange={updateCount}
+                        onSecondsChange={updateSeconds}
+                      />
+                      <TextControls
+                        options={options}
+                        onChange={updateOptions}
+                      />
+                    </div>
+                    <TestStatus test={test} />
+                    <TypingArea
+                      test={test}
+                      language={options.language}
+                      focused={focused}
+                      onFocusChange={setFocused}
+                      onInput={(value) =>
+                        dispatch({
+                          type: 'input',
+                          value,
+                          at: performance.now(),
+                        })
+                      }
+                      onAdvance={() =>
+                        dispatch({ type: 'advance', at: performance.now() })
+                      }
+                    />
+                  </>
+                )}
+                <div
+                  className={[
+                    styles.actions,
+                    focusMode ? styles.quietActions : '',
+                  ].join(' ')}
+                >
+                  <button
+                    className={styles.refreshButton}
+                    type="button"
+                    onClick={() => resetTest()}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M20 11a8 8 0 1 0-2.4 6M20 4v7h-7"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {test.phase === 'finished' ? 'Ще раз' : 'Інший текст'}
+                  </button>
+                </div>
+              </>
+            }
+          />
+          <Route
+            path="/history"
+            element={<HistoryPage initialLanguage={options.language} />}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );

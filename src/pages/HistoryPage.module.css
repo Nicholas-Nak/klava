@@ -1,0 +1,52 @@
+.page {
+  display: grid;
+  gap: 28px;
+}
+.topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.topline h2 {
+  margin: 0;
+  font: 600 clamp(24px, 4vw, 32px)/1.4 var(--font-heading);
+  letter-spacing: -0.05em;
+}
+.topline h2:focus {
+  outline: none;
+}
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.filter select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.filter select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.note {
+  margin: -12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.warning {
+  margin: 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--accent);
+  color: var(--accent);
+  font-size: 14px;
+  line-height: 1.7;
+}

@@ -1,11 +1,22 @@
-import { StrictMode } from 'react';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { StrictMode, type ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
+import {
+  act,
+  fireEvent,
+  render as renderView,
+  screen,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import * as textGenerator from '../domain/text';
 import { App } from './App';
 import { useHistoryStore } from '../stores/historyStore';
 import { HISTORY_STORAGE_KEY } from '../stores/historyStorage';
+
+function render(ui: ReactNode) {
+  return renderView(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 vi.mock('../components/SpeedChart', () => ({
   SpeedChart: () => <figure aria-label="Швидкість за секундами" />,
@@ -541,4 +552,39 @@ it('does not record idle or abandoned tests', async () => {
   await user.tab();
   await user.click(screen.getByRole('button', { name: 'Інший текст' }));
   expect(useHistoryStore.getState().entries).toEqual([]);
+});
+
+it('opens history and returns to the current training options', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+  await user.click(screen.getByRole('link', { name: 'Історія' }));
+  expect(screen.getByRole('heading', { name: 'Історія' })).toHaveFocus();
+  expect(screen.getByRole('combobox', { name: 'Мова' })).toHaveValue('en');
+  expect(screen.getByRole('link', { name: 'Історія' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  expect(screen.queryByRole('textbox', { name: 'Введення тексту' })).toBeNull();
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(screen.getByRole('radio', { name: 'English' })).toBeChecked();
+});
+
+it('records a running countdown that finishes while history is open', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  await user.click(screen.getByRole('region', { name: 'Текст для друку' }));
+  await user.keyboard('а');
+  await user.tab();
+  await user.click(screen.getByRole('link', { name: 'Історія' }));
+  await act(async () => vi.advanceTimersByTime(15000));
+  expect(screen.getAllByRole('row')).toHaveLength(2);
+  expect(useHistoryStore.getState().entries).toHaveLength(1);
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(
+    screen.getByRole('heading', { name: 'Тест завершено' }),
+  ).toBeInTheDocument();
 });
