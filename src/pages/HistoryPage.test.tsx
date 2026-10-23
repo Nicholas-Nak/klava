@@ -1,11 +1,15 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, expect, it } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { createHistoryEntry } from '../domain/history';
 import { createTest, testReducer } from '../domain/testReducer';
 import { useHistoryStore } from '../stores/historyStore';
 import type { Language } from '../types';
 import { HistoryPage } from './HistoryPage';
+
+vi.mock('../components/ProgressChart', () => ({
+  ProgressChart: () => <figure aria-label="Прогрес за днями" />,
+}));
 
 function entry(id: string, language: Language) {
   let test = createTest(['cat'], { type: 'time', seconds: 15 });

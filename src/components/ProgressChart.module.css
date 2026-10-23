@@ -1,0 +1,111 @@
+.figure {
+  margin: 0;
+}
+.figure figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.figure figcaption > span {
+  color: var(--muted);
+  font: 12px var(--font-test);
+}
+.plot {
+  width: 100%;
+  height: 220px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend i {
+  width: 20px;
+  border-top: 2px solid var(--ink);
+}
+.legend li:last-child i {
+  border-color: var(--accent);
+  border-top-style: dashed;
+}
+.note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.tooltip {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 12px;
+}
+.tooltip p {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.tooltip dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+.tooltip dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+.tooltip dd {
+  margin: 0;
+  font-family: var(--font-test);
+}
+.data {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.data summary {
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+}
+.data summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.data table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.data caption {
+  padding: 12px 0;
+  text-align: left;
+}
+.data th,
+.data td {
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+.data th:first-child {
+  padding-left: 0;
+  text-align: left;
+}
+.data tbody th {
+  font-weight: 400;
+}

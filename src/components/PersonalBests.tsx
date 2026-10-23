@@ -18,8 +18,8 @@ export function PersonalBests({
         Особисті рекорди <span>{entries.length}</span>
       </summary>
       <p className={styles.note}>
-        Найкраща WPM для кожного набору параметрів. За однакової швидкості —
-        вища точність.
+        Найвища швидкість для кожного набору параметрів. За однакової швидкості
+        — вища точність.
       </p>
       <dl className={styles.list}>
         {entries.map(({ id, completedAt, options, result }) => (

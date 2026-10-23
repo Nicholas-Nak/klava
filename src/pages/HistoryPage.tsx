@@ -1,9 +1,16 @@
 import { PersonalBests } from '../components/PersonalBests';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { getDailyProgress } from '../domain/progress';
 import { HistoryTable } from '../components/HistoryTable';
 import { useHistoryStore } from '../stores/historyStore';
 import type { Language } from '../types';
 import styles from './HistoryPage.module.css';
+
+const ProgressChart = lazy(() =>
+  import('../components/ProgressChart').then((module) => ({
+    default: module.ProgressChart,
+  })),
+);
 
 export function HistoryPage({
   initialLanguage,
@@ -17,6 +24,10 @@ export function HistoryPage({
   const heading = useRef<HTMLHeadingElement>(null);
   const filtered = entries.filter(
     (entry) => entry.options.language === language,
+  );
+  const days = getDailyProgress(
+    filtered,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
   useEffect(() => {
     heading.current?.focus();
@@ -53,6 +64,13 @@ export function HistoryPage({
       <PersonalBests
         entries={bests.filter((entry) => entry.options.language === language)}
       />
+      {days.length > 0 && (
+        <Suspense
+          fallback={<p className={styles.note}>Завантаження графіка…</p>}
+        >
+          <ProgressChart days={days} />
+        </Suspense>
+      )}
       <HistoryTable entries={filtered} />
     </section>
   );

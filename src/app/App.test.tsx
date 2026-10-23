@@ -18,6 +18,10 @@ function render(ui: ReactNode) {
   return renderView(<MemoryRouter>{ui}</MemoryRouter>);
 }
 
+vi.mock('../components/ProgressChart', () => ({
+  ProgressChart: () => <figure aria-label="Прогрес за днями" />,
+}));
+
 vi.mock('../components/SpeedChart', () => ({
   SpeedChart: () => <figure aria-label="Швидкість за секундами" />,
 }));
