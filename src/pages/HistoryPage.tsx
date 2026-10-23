@@ -1,3 +1,5 @@
+import { KeyboardHeatmap } from '../components/KeyboardHeatmap';
+import { mergeMistakeProfiles } from '../domain/mistakeHistory';
 import { PersonalBests } from '../components/PersonalBests';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { getDailyProgress } from '../domain/progress';
@@ -70,6 +72,14 @@ export function HistoryPage({
         >
           <ProgressChart days={days} />
         </Suspense>
+      )}
+      {filtered.length > 0 && (
+        <KeyboardHeatmap
+          language={language}
+          profile={mergeMistakeProfiles(
+            filtered.map((entry) => entry.mistakes),
+          )}
+        />
       )}
       <HistoryTable entries={filtered} />
     </section>
