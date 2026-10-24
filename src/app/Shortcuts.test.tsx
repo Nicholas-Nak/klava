@@ -130,3 +130,40 @@ it('starts with an empty input after restarting during composition', async () =>
   expect(screen.getByRole('textbox')).toHaveValue('');
   expect(screen.getByRole('textbox')).toHaveFocus();
 });
+
+it('offers Tab then Enter immediately after a result without duplicating history', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  useSettingsStore
+    .getState()
+    .updateSettings({ defaultMode: { type: 'time', seconds: 15 } });
+  const user = userEvent.setup();
+  renderApp();
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'а' } });
+  act(() => vi.advanceTimersByTime(15000));
+  expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
+  const savedId = useHistoryStore.getState().entries[0]?.id;
+  await user.tab();
+  expect(screen.getByRole('button', { name: 'Ще раз' })).toHaveFocus();
+  await user.keyboard('{Enter}');
+  expect(screen.queryByRole('heading', { name: 'Тест завершено' })).toBeNull();
+  expect(screen.getByRole('textbox')).toHaveFocus();
+  expect(screen.getByRole('textbox')).toHaveValue('');
+  expect(screen.getByRole('timer')).toHaveTextContent('15 с');
+  expect(useHistoryStore.getState().entries.map(({ id }) => id)).toEqual([
+    savedId,
+  ]);
+});
+
+it('keeps result details reachable with Shift+Tab from the restart button', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  useSettingsStore
+    .getState()
+    .updateSettings({ defaultMode: { type: 'time', seconds: 15 } });
+  const user = userEvent.setup();
+  renderApp();
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'а' } });
+  act(() => vi.advanceTimersByTime(15000));
+  await user.tab();
+  await user.tab({ shift: true });
+  expect(screen.getByText('Як рахуються показники')).toHaveFocus();
+});

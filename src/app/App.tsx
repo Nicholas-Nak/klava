@@ -62,6 +62,7 @@ export function App() {
   const [focused, setFocused] = useState(false);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const typingInput = useRef<HTMLInputElement>(null);
+  const restartButton = useRef<HTMLButtonElement>(null);
   const focusAfterReset = useRef(false);
   useLayoutEffect(() => {
     if (!focusAfterReset.current) return;
@@ -223,6 +224,7 @@ export function App() {
                 {result ? (
                   <Results
                     result={result}
+                    onRestartFocus={() => restartButton.current?.focus()}
                     practice={practice}
                     options={{ ...options, mode: test.mode }}
                   />
@@ -289,6 +291,7 @@ export function App() {
                   ].join(' ')}
                 >
                   <button
+                    ref={restartButton}
                     className={styles.refreshButton}
                     type="button"
                     onClick={(event) => {

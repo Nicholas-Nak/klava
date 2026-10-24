@@ -11,6 +11,7 @@ interface ResultsProps {
   result: TestResult;
   options: TestOptions;
   practice?: PracticeMode;
+  onRestartFocus?: () => void;
 }
 
 const numberFormat = new Intl.NumberFormat('uk-UA', {
@@ -22,6 +23,7 @@ export function Results({
   result,
   options,
   practice = 'standard',
+  onRestartFocus,
 }: ResultsProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -30,7 +32,24 @@ export function Results({
 
   return (
     <section className={styles.results} aria-label="Результати тесту">
-      <h2 className={styles.heading} ref={headingRef} tabIndex={-1}>
+      <h2
+        className={styles.heading}
+        ref={headingRef}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (
+            event.key === 'Tab' &&
+            !event.shiftKey &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey &&
+            onRestartFocus
+          ) {
+            event.preventDefault();
+            onRestartFocus();
+          }
+        }}
+      >
         Тест завершено
       </h2>
       <p className={styles.context}>
