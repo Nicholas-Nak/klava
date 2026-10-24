@@ -68,3 +68,25 @@ it('uses the selected text language for native keyboard input', () => {
   const { input } = renderTypingArea();
   expect(input).toHaveAttribute('lang', 'uk');
 });
+
+it('uses a text keyboard with a next-word action', () => {
+  const { input } = renderTypingArea();
+  expect(input).toHaveAttribute('inputmode', 'text');
+  expect(input).toHaveAttribute('enterkeyhint', 'next');
+});
+
+it('submits the current word with Enter without adding a character', () => {
+  const { input, onInput, onAdvance } = renderTypingArea();
+  expect(fireEvent.keyDown(input, { key: 'Enter' })).toBe(false);
+  expect(onAdvance).toHaveBeenCalledOnce();
+  expect(onInput).not.toHaveBeenCalled();
+});
+
+it('lets Enter confirm a composition instead of submitting the word', () => {
+  const { input, onAdvance } = renderTypingArea();
+  fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+  fireEvent.compositionStart(input);
+  fireEvent.change(input, { target: { value: 'ї' } });
+  fireEvent.keyDown(input, { key: 'Enter' });
+  expect(onAdvance).not.toHaveBeenCalled();
+});

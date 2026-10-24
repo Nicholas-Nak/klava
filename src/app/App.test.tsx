@@ -594,3 +594,18 @@ it('records a running countdown that finishes while history is open', async () =
     screen.getByRole('heading', { name: 'Тест завершено' }),
   ).toBeInTheDocument();
 });
+
+it('advances with Enter and leaves an empty word untouched', () => {
+  render(<App />);
+  const input = screen.getByRole('textbox');
+  fireEvent.keyDown(input, { key: 'Enter' });
+  expect(
+    screen.getByRole('status', { name: 'Набрано слів' }),
+  ).toHaveTextContent('0 / 25');
+  fireEvent.change(input, { target: { value: 'кіт' } });
+  fireEvent.keyDown(input, { key: 'Enter' });
+  expect(input).toHaveValue('');
+  expect(
+    screen.getByRole('status', { name: 'Набрано слів' }),
+  ).toHaveTextContent('1 / 25');
+});

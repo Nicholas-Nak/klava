@@ -48,7 +48,8 @@ export function TypingArea({
       }}
     >
       <span id={instructionsId} className={styles.instructions}>
-        Набирайте слова. Пробіл — наступне слово. Backspace — виправити поточне.
+        Набирайте слова. Пробіл або Enter — наступне слово. Backspace —
+        виправити поточне.
       </span>
       <input
         ref={fieldRef}
@@ -58,6 +59,8 @@ export function TypingArea({
         lang={language}
         value={draft ?? test.input}
         disabled={test.phase === 'finished'}
+        inputMode="text"
+        enterKeyHint="next"
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
@@ -93,7 +96,7 @@ export function TypingArea({
         }}
         onKeyDown={(event) => {
           if (
-            event.key === ' ' &&
+            (event.key === ' ' || event.key === 'Enter') &&
             !composingRef.current &&
             !event.nativeEvent.isComposing
           ) {
