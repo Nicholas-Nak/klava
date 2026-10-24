@@ -30,12 +30,11 @@ export function TypingArea({
   const instructionsId = useId();
 
   function handleInput(value: string) {
-    if (/\s$/.test(value)) {
-      onInput(value.trimEnd());
-      onAdvance();
-    } else {
-      onInput(value);
-    }
+    const separated = /\s$/.test(value);
+    const word = separated ? value.trimEnd() : value;
+    if (/\s/.test(word)) return;
+    onInput(word);
+    if (separated) onAdvance();
   }
 
   return (

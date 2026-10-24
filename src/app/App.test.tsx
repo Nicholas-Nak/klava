@@ -609,3 +609,14 @@ it('advances with Enter and leaves an empty word untouched', () => {
     screen.getByRole('status', { name: 'Набрано слів' }),
   ).toHaveTextContent('1 / 25');
 });
+
+it('keeps the current word after a rejected multi-word mobile edit', () => {
+  render(<App />);
+  const input = screen.getByRole('textbox');
+  fireEvent.change(input, { target: { value: 'кіт' } });
+  fireEvent.change(input, { target: { value: 'кіт пес ' } });
+  expect(input).toHaveValue('кіт');
+  expect(
+    screen.getByRole('status', { name: 'Набрано слів' }),
+  ).toHaveTextContent('0 / 25');
+});

@@ -90,3 +90,23 @@ it('lets Enter confirm a composition instead of submitting the word', () => {
   fireEvent.keyDown(input, { key: 'Enter' });
   expect(onAdvance).not.toHaveBeenCalled();
 });
+
+it.each(['кіт пес', 'кіт пес ', 'кіт\u00a0пес '])(
+  'rejects a multi-word mobile edit: %j',
+  (value) => {
+    const { input, onInput, onAdvance } = renderTypingArea();
+    fireEvent.change(input, { target: { value } });
+    expect(onInput).not.toHaveBeenCalled();
+    expect(onAdvance).not.toHaveBeenCalled();
+  },
+);
+
+it.each(['їжак ', 'їжак\u00a0', 'їжак  '])(
+  'accepts mobile separators after one word: %j',
+  (value) => {
+    const { input, onInput, onAdvance } = renderTypingArea();
+    fireEvent.change(input, { target: { value } });
+    expect(onInput).toHaveBeenCalledExactlyOnceWith('їжак');
+    expect(onAdvance).toHaveBeenCalledOnce();
+  },
+);
