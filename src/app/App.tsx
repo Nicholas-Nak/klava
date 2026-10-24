@@ -4,7 +4,9 @@ import { getPracticeTargets, type WeakSpot } from '../domain/weakSpots';
 import { generateWeakText } from '../domain/weakText';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router';
 import { HistoryPage } from '../pages/HistoryPage';
-import { useEffect, useReducer, useState } from 'react';
+import { SettingsPage } from '../pages/SettingsPage';
+import { useSettingsStore } from '../stores/settingsStore';
+import { useEffect, useLayoutEffect, useReducer, useState } from 'react';
 import { ModeControls } from '../components/ModeControls';
 import { Results } from '../components/Results';
 import { TextControls } from '../components/TextControls';
@@ -31,6 +33,10 @@ const initialOptions: TextOptions = {
 };
 
 export function App() {
+  const theme = useSettingsStore((state) => state.settings.theme);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
   const [options, setOptions] = useState(initialOptions);
   const [practice, setPractice] = useState<PracticeMode>('standard');
   const [targets, setTargets] = useState<WeakSpot[]>([]);
@@ -169,14 +175,13 @@ export function App() {
             Тренування
           </NavLink>
           <NavLink to="/history">Історія</NavLink>
+          <NavLink to="/settings">Налаштування</NavLink>
         </nav>
       </header>
       <main
         className={[
           styles.workspace,
-          result || location.pathname === '/history'
-            ? styles.resultWorkspace
-            : '',
+          result || location.pathname !== '/' ? styles.resultWorkspace : '',
         ].join(' ')}
       >
         <Routes>
@@ -281,6 +286,7 @@ export function App() {
             path="/history"
             element={<HistoryPage initialLanguage={options.language} />}
           />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -3,15 +3,26 @@
   --ink: #252a24;
   --muted: #697164;
   --line: #d9ddcf;
-  --accent: #b4412d;
+  --accent: #aa3c29;
   --accent-soft: #f1ded5;
   --font-test: 'JetBrains Mono', monospace;
   --font-heading: 'Unbounded', sans-serif;
 
+  color-scheme: light;
   font-family: system-ui, sans-serif;
   color: var(--ink);
   background: var(--paper);
   font-synthesis: none;
+}
+
+:root[data-theme='dark'] {
+  --paper: #20241f;
+  --ink: #ede9df;
+  --muted: #abb3a4;
+  --line: #3d463a;
+  --accent: #ee9678;
+  --accent-soft: #3c2c23;
+  color-scheme: dark;
 }
 
 * {
