@@ -155,3 +155,15 @@
     justify-content: flex-end;
   }
 }
+
+@media (max-width: 600px), (max-height: 500px) and (max-width: 1000px) {
+  .typing .header,
+  .typing .toolbar,
+  .typing .shortcuts {
+    display: none;
+  }
+
+  .typing .workspace {
+    padding: 0;
+  }
+}

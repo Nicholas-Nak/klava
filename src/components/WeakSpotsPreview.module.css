@@ -39,3 +39,9 @@
 .hidden {
   visibility: hidden;
 }
+
+@media (max-width: 600px), (max-height: 500px) and (max-width: 1000px) {
+  .hidden {
+    display: none;
+  }
+}

@@ -194,7 +194,12 @@ export function App() {
   }
 
   return (
-    <div className={styles.app}>
+    <div
+      className={[
+        styles.app,
+        location.pathname === '/' && focused && !result ? styles.typing : '',
+      ].join(' ')}
+    >
       <header
         className={[styles.header, focusMode ? styles.hidden : ''].join(' ')}
         aria-hidden={focusMode}
