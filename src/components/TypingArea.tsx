@@ -28,6 +28,7 @@ export function TypingArea({
   const composingRef = useRef(false);
   const [draft, setDraft] = useState<string | null>(null);
   const instructionsId = useId();
+  const currentWordId = useId();
 
   function handleInput(value: string) {
     const separated = /\s$/.test(value);
@@ -54,7 +55,7 @@ export function TypingArea({
         ref={fieldRef}
         className={styles.input}
         aria-label="Введення тексту"
-        aria-describedby={instructionsId}
+        aria-describedby={`${instructionsId} ${currentWordId}`}
         lang={language}
         value={draft ?? test.input}
         disabled={test.phase === 'finished'}
@@ -104,6 +105,17 @@ export function TypingArea({
           }
         }}
       />
+      <span
+        id={currentWordId}
+        className={styles.instructions}
+        role="status"
+        aria-label="Поточне слово"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        Друкуйте:{' '}
+        <span lang={language}>{test.words[test.completed.length] ?? ''}</span>
+      </span>
       <Passage
         words={test.words}
         language={language}

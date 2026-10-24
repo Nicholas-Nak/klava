@@ -620,3 +620,33 @@ it('keeps the current word after a rejected multi-word mobile edit', () => {
     screen.getByRole('status', { name: 'Набрано слів' }),
   ).toHaveTextContent('0 / 25');
 });
+
+it('describes the current word and announces only its change after submission', () => {
+  vi.spyOn(textGenerator, 'generateText').mockReturnValue([
+    'їжак',
+    'ґанок',
+    ...Array<string>(23).fill('єнот'),
+  ]);
+  render(<App />);
+  const input = screen.getByRole('textbox');
+  const currentWord = screen.getByRole('status', { name: 'Поточне слово' });
+  expect(input).toHaveAccessibleDescription(/Друкуйте: їжак/);
+  expect(currentWord).toHaveAttribute('aria-live', 'polite');
+  fireEvent.change(input, { target: { value: 'ї' } });
+  expect(currentWord).toHaveTextContent('Друкуйте: їжак');
+  fireEvent.keyDown(input, { key: 'Enter' });
+  expect(currentWord).toHaveTextContent('Друкуйте: ґанок');
+  expect(input).toHaveAccessibleDescription(/Друкуйте: ґанок/);
+});
+
+it('marks the spoken word with the selected text language', async () => {
+  vi.spyOn(textGenerator, 'generateText').mockImplementation((count, options) =>
+    Array<string>(count).fill(options.language === 'en' ? 'word' : 'їжак'),
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('radio', { name: 'English' }));
+  const word = screen.getByRole('status', { name: 'Поточне слово' });
+  expect(word).toHaveTextContent('Друкуйте: word');
+  expect(word.querySelector('span')).toHaveAttribute('lang', 'en');
+});
