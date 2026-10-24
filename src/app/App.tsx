@@ -34,9 +34,11 @@ const initialOptions: TextOptions = {
 
 export function App() {
   const theme = useSettingsStore((state) => state.settings.theme);
+  const fontSize = useSettingsStore((state) => state.settings.fontSize);
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    document.documentElement.dataset.fontSize = fontSize;
+  }, [theme, fontSize]);
   const [options, setOptions] = useState(initialOptions);
   const [practice, setPractice] = useState<PracticeMode>('standard');
   const [targets, setTargets] = useState<WeakSpot[]>([]);

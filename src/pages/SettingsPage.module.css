@@ -22,3 +22,18 @@
   font-size: 14px;
   line-height: 1.7;
 }
+
+.fontSettings {
+  display: grid;
+  gap: 20px;
+}
+
+.preview {
+  margin: 0;
+  padding: 20px 0;
+  border-block: 1px solid var(--line);
+  font-family: var(--font-test);
+  font-size: var(--test-font-size);
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}

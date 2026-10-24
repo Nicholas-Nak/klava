@@ -5,6 +5,7 @@
   --line: #d9ddcf;
   --accent: #aa3c29;
   --accent-soft: #f1ded5;
+  --test-font-size: clamp(20px, 2.4vw, 28px);
   --font-test: 'JetBrains Mono', monospace;
   --font-heading: 'Unbounded', sans-serif;
 
@@ -23,6 +24,14 @@
   --accent: #ee9678;
   --accent-soft: #3c2c23;
   color-scheme: dark;
+}
+
+:root[data-font-size='small'] {
+  --test-font-size: clamp(18px, 2vw, 22px);
+}
+
+:root[data-font-size='large'] {
+  --test-font-size: clamp(24px, 3vw, 34px);
 }
 
 * {

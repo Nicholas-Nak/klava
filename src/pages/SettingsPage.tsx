@@ -5,6 +5,7 @@ import styles from './SettingsPage.module.css';
 
 export function SettingsPage() {
   const theme = useSettingsStore((state) => state.settings.theme);
+  const fontSize = useSettingsStore((state) => state.settings.fontSize);
   const storageAvailable = useSettingsStore((state) => state.storageAvailable);
   const updateSettings = useSettingsStore((state) => state.updateSettings);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -40,6 +41,36 @@ export function SettingsPage() {
           ))}
         </div>
       </fieldset>
+      <div className={styles.fontSettings}>
+        <fieldset className={controls.group}>
+          <legend>Розмір тексту</legend>
+          <div className={controls.choices}>
+            {(
+              [
+                { value: 'small', label: 'Малий' },
+                { value: 'medium', label: 'Середній' },
+                { value: 'large', label: 'Великий' },
+              ] as const
+            ).map((option) => (
+              <label className={controls.choice} key={option.value}>
+                <input
+                  type="radio"
+                  name="font-size"
+                  value={option.value}
+                  checked={fontSize === option.value}
+                  onChange={() => updateSettings({ fontSize: option.value })}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <p className={styles.preview} aria-label="Приклад розміру тексту">
+          Ґанок, їжак, єнот.
+          <br />
+          <span lang="en">Practice makes progress.</span>
+        </p>
+      </div>
       {!storageAvailable && (
         <p className={styles.warning} role="status">
           Не вдалося зберегти налаштування. Зміни діятимуть до перезавантаження

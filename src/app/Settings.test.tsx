@@ -78,3 +78,29 @@ it('shows a persistence warning only when storage is unavailable', () => {
     'Не вдалося зберегти налаштування',
   );
 });
+
+it('applies text size without changing the theme or the current word', async () => {
+  const user = userEvent.setup();
+  useSettingsStore.getState().updateSettings({ theme: 'dark' });
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>,
+  );
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'їжак' } });
+  await user.click(screen.getByRole('link', { name: 'Налаштування' }));
+  for (const [label, size] of [
+    ['Малий', 'small'],
+    ['Великий', 'large'],
+    ['Середній', 'medium'],
+  ] as const) {
+    await user.click(screen.getByRole('radio', { name: label }));
+    expect(document.documentElement).toHaveAttribute('data-font-size', size);
+    expect(screen.getByLabelText('Приклад розміру тексту')).toHaveTextContent(
+      'їжак',
+    );
+  }
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+  expect(screen.getByRole('textbox')).toHaveValue('їжак');
+});
