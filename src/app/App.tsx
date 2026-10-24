@@ -84,6 +84,25 @@ export function App() {
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
   const result = test.phase === 'finished' ? getTestResult(test) : null;
   const location = useLocation();
+  const previousPath = useRef(location.pathname);
+  useEffect(() => {
+    document.title =
+      location.pathname === '/history'
+        ? 'Історія — Klava'
+        : location.pathname === '/settings'
+          ? 'Налаштування — Klava'
+          : test.phase === 'finished'
+            ? 'Результат — Klava'
+            : 'Klava — тренажер друку';
+    if (
+      previousPath.current !== location.pathname &&
+      location.pathname === '/' &&
+      test.phase !== 'finished'
+    ) {
+      mainContent.current?.focus();
+    }
+    previousPath.current = location.pathname;
+  }, [location.pathname, test.phase]);
   const focusMode =
     location.pathname === '/' && test.phase === 'running' && focused;
 

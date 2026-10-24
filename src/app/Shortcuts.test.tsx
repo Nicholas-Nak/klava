@@ -193,3 +193,34 @@ it('skips to settings content without changing the hash route', async () => {
     'page',
   );
 });
+
+it('updates the page title and restores focus when returning to practice', async () => {
+  const user = userEvent.setup();
+  renderApp();
+  expect(document.title).toBe('Klava — тренажер друку');
+  for (const page of ['Історія', 'Налаштування']) {
+    await user.click(screen.getByRole('link', { name: page }));
+    expect(document.title).toBe(`${page} — Klava`);
+    expect(screen.getByRole('heading', { name: page })).toHaveFocus();
+  }
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(document.title).toBe('Klava — тренажер друку');
+  expect(screen.getByRole('main')).toHaveFocus();
+});
+
+it('keeps the current page context when a countdown finishes elsewhere', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  useSettingsStore
+    .getState()
+    .updateSettings({ defaultMode: { type: 'time', seconds: 15 } });
+  const user = userEvent.setup();
+  renderApp();
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'а' } });
+  await user.click(screen.getByRole('link', { name: 'Налаштування' }));
+  act(() => vi.advanceTimersByTime(15000));
+  expect(document.title).toBe('Налаштування — Klava');
+  expect(screen.getByRole('heading', { name: 'Налаштування' })).toHaveFocus();
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(document.title).toBe('Результат — Klava');
+  expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
+});
