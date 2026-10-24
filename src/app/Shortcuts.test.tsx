@@ -167,3 +167,29 @@ it('keeps result details reachable with Shift+Tab from the restart button', asyn
   await user.tab({ shift: true });
   expect(screen.getByText('Як рахуються показники')).toHaveFocus();
 });
+
+it('lets keyboard users skip navigation directly to the training controls', async () => {
+  const user = userEvent.setup();
+  renderApp();
+  await user.tab();
+  expect(screen.getByRole('link', { name: 'До вмісту' })).toHaveFocus();
+  await user.keyboard('{Enter}');
+  expect(screen.getByRole('main')).toHaveFocus();
+  await user.tab();
+  expect(screen.getByRole('radio', { name: 'Слова' })).toHaveFocus();
+});
+
+it('skips to settings content without changing the hash route', async () => {
+  const user = userEvent.setup();
+  renderApp();
+  await user.click(screen.getByRole('link', { name: 'Налаштування' }));
+  await user.click(screen.getByRole('link', { name: 'До вмісту' }));
+  expect(screen.getByRole('main')).toHaveFocus();
+  expect(
+    screen.getByRole('heading', { name: 'Налаштування' }),
+  ).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Налаштування' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+});

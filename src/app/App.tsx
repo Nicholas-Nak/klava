@@ -61,6 +61,7 @@ export function App() {
   );
   const [focused, setFocused] = useState(false);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
+  const mainContent = useRef<HTMLElement>(null);
   const typingInput = useRef<HTMLInputElement>(null);
   const restartButton = useRef<HTMLButtonElement>(null);
   const focusAfterReset = useRef(false);
@@ -200,6 +201,16 @@ export function App() {
         location.pathname === '/' && focused && !result ? styles.typing : '',
       ].join(' ')}
     >
+      <a
+        className={styles.skipLink}
+        href="#main-content"
+        onClick={(event) => {
+          event.preventDefault();
+          mainContent.current?.focus();
+        }}
+      >
+        До вмісту
+      </a>
       <header
         className={[styles.header, focusMode ? styles.hidden : ''].join(' ')}
         aria-hidden={focusMode}
@@ -216,6 +227,9 @@ export function App() {
         </nav>
       </header>
       <main
+        id="main-content"
+        ref={mainContent}
+        tabIndex={-1}
         className={[
           styles.workspace,
           result || location.pathname !== '/' ? styles.resultWorkspace : '',
