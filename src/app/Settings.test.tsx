@@ -197,3 +197,25 @@ it('restores and saves standard preferences while preserving the current test', 
   expect(screen.getByRole('textbox')).toHaveValue('весна');
   expect(screen.getByRole('radio', { name: '60 с' })).toBeChecked();
 });
+
+it('updates the mobile browser color together with the selected theme', async () => {
+  const meta = document.createElement('meta');
+  meta.name = 'theme-color';
+  meta.content = '#000000';
+  document.head.append(meta);
+  try {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/settings']}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(meta.content).toBe('#f5f2e9');
+    await user.click(screen.getByRole('radio', { name: 'Темна' }));
+    expect(meta.content).toBe('#20241f');
+    await user.click(screen.getByRole('radio', { name: 'Світла' }));
+    expect(meta.content).toBe('#f5f2e9');
+  } finally {
+    meta.remove();
+  }
+});

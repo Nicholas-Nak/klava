@@ -44,6 +44,9 @@ export function App() {
   const fontSize = useSettingsStore((state) => state.settings.fontSize);
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'dark' ? '#20241f' : '#f5f2e9');
     document.documentElement.dataset.fontSize = fontSize;
   }, [theme, fontSize]);
   const [initialMode] = useState(
