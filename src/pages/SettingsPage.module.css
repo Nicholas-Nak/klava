@@ -69,3 +69,27 @@
   font-size: 13px;
   line-height: 1.7;
 }
+
+.resetButton {
+  justify-self: start;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.resetButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

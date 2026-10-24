@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
+import { DEFAULT_SETTINGS } from '../stores/settingsStorage';
 import controls from '../components/Controls.module.css';
 import styles from './SettingsPage.module.css';
 import type { TestMode } from '../types';
@@ -119,6 +120,13 @@ export function SettingsPage() {
           Цей режим буде обрано при наступному відкритті Klava.
         </p>
       </div>
+      <button
+        type="button"
+        className={styles.resetButton}
+        onClick={() => updateSettings(DEFAULT_SETTINGS)}
+      >
+        Відновити стандартні налаштування
+      </button>
       {!storageAvailable && (
         <p className={styles.warning} role="status">
           Не вдалося зберегти налаштування. Зміни діятимуть до перезавантаження

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '../stores/settingsStore';
-import { DEFAULT_SETTINGS } from '../stores/settingsStorage';
+import { DEFAULT_SETTINGS, loadSettings } from '../stores/settingsStorage';
 import { useHistoryStore } from '../stores/historyStore';
 import { App } from './App';
 
@@ -167,4 +167,33 @@ it('applies a changed default on the next visit without resetting the current te
   );
   expect(screen.getByRole('radio', { name: '60 с' })).toBeChecked();
   expect(screen.getByRole('textbox')).toHaveValue('');
+});
+
+it('restores and saves standard preferences while preserving the current test', async () => {
+  useSettingsStore.getState().updateSettings({
+    theme: 'dark',
+    fontSize: 'large',
+    defaultMode: { type: 'time', seconds: 60 },
+  });
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>,
+  );
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'весна' } });
+  await user.click(screen.getByRole('link', { name: 'Налаштування' }));
+  await user.click(
+    screen.getByRole('button', { name: 'Відновити стандартні налаштування' }),
+  );
+  expect(screen.getByRole('radio', { name: 'Світла' })).toBeChecked();
+  expect(screen.getByRole('radio', { name: 'Середній' })).toBeChecked();
+  expect(
+    screen.getByRole('combobox', { name: 'Режим при відкритті' }),
+  ).toHaveValue('words-25');
+  expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+  expect(loadSettings(localStorage).settings).toEqual(DEFAULT_SETTINGS);
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(screen.getByRole('textbox')).toHaveValue('весна');
+  expect(screen.getByRole('radio', { name: '60 с' })).toBeChecked();
 });
