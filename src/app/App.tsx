@@ -39,17 +39,30 @@ export function App() {
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.fontSize = fontSize;
   }, [theme, fontSize]);
+  const [initialMode] = useState(
+    () => useSettingsStore.getState().settings.defaultMode,
+  );
   const [options, setOptions] = useState(initialOptions);
   const [practice, setPractice] = useState<PracticeMode>('standard');
   const [targets, setTargets] = useState<WeakSpot[]>([]);
-  const [count, setCount] = useState<WordCount>(25);
-  const [mode, setMode] = useState<TestMode['type']>('words');
-  const [seconds, setSeconds] = useState<TimeLimit>(30);
+  const [count, setCount] = useState<WordCount>(
+    initialMode.type === 'words' ? initialMode.count : 25,
+  );
+  const [mode, setMode] = useState<TestMode['type']>(initialMode.type);
+  const [seconds, setSeconds] = useState<TimeLimit>(
+    initialMode.type === 'time' ? initialMode.seconds : 30,
+  );
   const [focused, setFocused] = useState(false);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
   const addEntry = useHistoryStore((state) => state.addEntry);
   const [test, dispatch] = useReducer(testReducer, undefined, () =>
-    createTest(generateText(25, initialOptions), { type: 'words', count: 25 }),
+    createTest(
+      generateText(
+        initialMode.type === 'words' ? initialMode.count : 100,
+        initialOptions,
+      ),
+      initialMode,
+    ),
   );
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };

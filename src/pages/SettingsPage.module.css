@@ -37,3 +37,35 @@
   line-height: 1.8;
   overflow-wrap: anywhere;
 }
+
+.defaultMode {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.defaultMode label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.defaultMode select {
+  min-height: 44px;
+  padding: 8px 36px 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.defaultMode select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.defaultMode p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}

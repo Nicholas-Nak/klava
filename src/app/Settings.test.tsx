@@ -104,3 +104,67 @@ it('applies text size without changing the theme or the current word', async () 
   expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
   expect(screen.getByRole('textbox')).toHaveValue('їжак');
 });
+
+it.each([15, 30, 60, 120] as const)(
+  'starts a new visit in the saved %i second mode',
+  (seconds) => {
+    useSettingsStore
+      .getState()
+      .updateSettings({ defaultMode: { type: 'time', seconds } });
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('radio', { name: 'Час' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: `${seconds} с` })).toBeChecked();
+    expect(screen.getByRole('timer')).toHaveTextContent(`${seconds} с`);
+  },
+);
+
+it.each([10, 25, 50, 100] as const)(
+  'starts a new visit with the saved %i word count',
+  (count) => {
+    useSettingsStore
+      .getState()
+      .updateSettings({ defaultMode: { type: 'words', count } });
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('radio', { name: 'Слова' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: String(count) })).toBeChecked();
+    expect(
+      screen.getByRole('status', { name: 'Набрано слів' }),
+    ).toHaveTextContent(`0 / ${count}`);
+  },
+);
+
+it('applies a changed default on the next visit without resetting the current test', async () => {
+  const user = userEvent.setup();
+  const view = render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>,
+  );
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'літо' } });
+  await user.click(screen.getByRole('link', { name: 'Налаштування' }));
+  await user.selectOptions(
+    screen.getByRole('combobox', { name: 'Режим при відкритті' }),
+    'time-60',
+  );
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+  expect(screen.getByRole('textbox')).toHaveValue('літо');
+  expect(screen.getByRole('radio', { name: 'Слова' })).toBeChecked();
+  await user.click(screen.getByRole('button', { name: 'Інший текст' }));
+  expect(screen.getByRole('radio', { name: '25' })).toBeChecked();
+  view.unmount();
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>,
+  );
+  expect(screen.getByRole('radio', { name: '60 с' })).toBeChecked();
+  expect(screen.getByRole('textbox')).toHaveValue('');
+});
