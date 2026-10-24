@@ -25,6 +25,7 @@ import type {
   WordCount,
 } from '../types';
 import styles from './App.module.css';
+import { useEscapeReset } from './useEscapeReset';
 
 const initialOptions: TextOptions = {
   language: 'uk',
@@ -146,6 +147,8 @@ export function App() {
       mode: nextMode,
     });
   }
+
+  useEscapeReset(location.pathname === '/', () => resetTest());
 
   function updatePractice(nextPractice: PracticeMode) {
     setPractice(nextPractice);
