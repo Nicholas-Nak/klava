@@ -47,7 +47,10 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
   padding-top: 20px;
 }
 
@@ -119,4 +122,36 @@
   flex-wrap: wrap;
   align-items: end;
   gap: 20px 40px;
+}
+
+.shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.shortcuts kbd {
+  padding: 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font: inherit;
+  font-family: var(--font-test);
+}
+
+.quietActions .shortcuts {
+  visibility: hidden;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .shortcuts {
+    display: none;
+  }
+
+  .actions {
+    justify-content: flex-end;
+  }
 }

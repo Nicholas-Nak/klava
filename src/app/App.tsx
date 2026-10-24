@@ -290,6 +290,14 @@ export function App() {
                     focusMode ? styles.quietActions : '',
                   ].join(' ')}
                 >
+                  <p className={styles.shortcuts} aria-hidden={focusMode}>
+                    <span>
+                      <kbd>Tab</kbd>, потім <kbd>Enter</kbd> — новий тест
+                    </span>
+                    <span>
+                      <kbd>Esc</kbd> — скинути
+                    </span>
+                  </p>
                   <button
                     ref={restartButton}
                     className={styles.refreshButton}

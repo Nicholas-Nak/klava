@@ -402,13 +402,15 @@ it('hides controls while typing and restores them when focus leaves the text', a
   expect(screen.getByRole('heading', { name: 'Klava' })).toBeInTheDocument();
   expect(screen.getByRole('radio', { name: 'English' })).toBeInTheDocument();
   expect(
-    screen.getByText('Натисніть на текст, щоб продовжити'),
+    screen.getByText('Час продовжує йти. Натисніть на текст, щоб продовжити'),
   ).toBeInTheDocument();
 
   await user.click(area);
   await user.keyboard('т');
   expect(input).toHaveValue('кіт');
-  expect(screen.queryByText('Натисніть на текст, щоб продовжити')).toBeNull();
+  expect(
+    screen.queryByText('Час продовжує йти. Натисніть на текст, щоб продовжити'),
+  ).toBeNull();
 });
 
 it('keeps the countdown running after focus leaves the text', async () => {

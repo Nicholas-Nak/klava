@@ -113,7 +113,7 @@ export function TypingArea({
       {test.phase !== 'finished' && (test.phase === 'idle' || !focused) && (
         <span className={styles.hint} aria-hidden="true">
           {test.phase === 'running'
-            ? 'Натисніть на текст, щоб продовжити'
+            ? 'Час продовжує йти. Натисніть на текст, щоб продовжити'
             : focused
               ? 'Почніть друкувати'
               : 'Натисніть на текст, щоб почати'}
