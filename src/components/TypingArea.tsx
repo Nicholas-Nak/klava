@@ -1,10 +1,11 @@
-import { useId, useRef, useState } from 'react';
+import { useId, useRef, useState, type RefObject } from 'react';
 import type { TestState } from '../domain/testReducer';
 import type { Language } from '../types';
 import { Passage } from './Passage';
 import styles from './TypingArea.module.css';
 
 interface TypingAreaProps {
+  inputRef?: RefObject<HTMLInputElement | null>;
   test: TestState;
   language: Language;
   focused: boolean;
@@ -14,6 +15,7 @@ interface TypingAreaProps {
 }
 
 export function TypingArea({
+  inputRef,
   test,
   language,
   focused,
@@ -21,7 +23,8 @@ export function TypingArea({
   onInput,
   onAdvance,
 }: TypingAreaProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const localInputRef = useRef<HTMLInputElement>(null);
+  const fieldRef = inputRef ?? localInputRef;
   const composingRef = useRef(false);
   const [draft, setDraft] = useState<string | null>(null);
   const instructionsId = useId();
@@ -41,14 +44,14 @@ export function TypingArea({
       aria-label="Текст для друку"
       onPointerDown={(event) => {
         event.preventDefault();
-        inputRef.current?.focus({ preventScroll: true });
+        fieldRef.current?.focus({ preventScroll: true });
       }}
     >
       <span id={instructionsId} className={styles.instructions}>
         Набирайте слова. Пробіл — наступне слово. Backspace — виправити поточне.
       </span>
       <input
-        ref={inputRef}
+        ref={fieldRef}
         className={styles.input}
         aria-label="Введення тексту"
         aria-describedby={instructionsId}

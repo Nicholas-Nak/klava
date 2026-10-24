@@ -41,7 +41,7 @@ it('resets a running test with Escape and leaves no abandoned result in history'
   act(() => vi.advanceTimersByTime(2300));
   expect(screen.getByRole('timer')).toHaveTextContent('2 с');
   fireEvent.keyDown(input, { key: 'Escape' });
-  expect(input).toHaveValue('');
+  expect(screen.getByRole('textbox')).toHaveValue('');
   expect(input).not.toHaveFocus();
   expect(screen.getByRole('timer')).toHaveTextContent('0 с');
   expect(screen.getByRole('navigation')).toBeVisible();
@@ -89,4 +89,44 @@ it('does not reset a test while another page is open', async () => {
   }
   await user.click(screen.getByRole('link', { name: 'Тренування' }));
   expect(screen.getByRole('textbox')).toHaveValue('літо');
+});
+
+it('restarts with Tab then Enter and puts typing focus on the fresh passage', async () => {
+  const user = userEvent.setup();
+  renderApp();
+  const input = screen.getByRole('textbox');
+  act(() => input.focus());
+  await user.keyboard('кіт');
+  await user.tab();
+  expect(screen.getByRole('button', { name: 'Інший текст' })).toHaveFocus();
+  await user.keyboard('{Enter}');
+  expect(screen.getByRole('textbox')).toHaveFocus();
+  expect(screen.getByRole('textbox')).toHaveValue('');
+  expect(screen.getByRole('timer')).toHaveTextContent('0 с');
+  expect(useHistoryStore.getState().entries).toEqual([]);
+  await user.keyboard('ї');
+  expect(screen.getByRole('textbox')).toHaveValue('ї');
+});
+
+it('keeps ordinary Tab and Shift+Tab navigation available', async () => {
+  const user = userEvent.setup();
+  renderApp();
+  act(() => screen.getByRole('textbox').focus());
+  await user.tab({ shift: true });
+  expect(screen.getByRole('checkbox', { name: 'Цифри' })).toHaveFocus();
+  await user.tab();
+  expect(screen.getByRole('textbox')).toHaveFocus();
+});
+
+it('starts with an empty input after restarting during composition', async () => {
+  const user = userEvent.setup();
+  renderApp();
+  const input = screen.getByRole('textbox');
+  act(() => input.focus());
+  fireEvent.compositionStart(input);
+  fireEvent.change(input, { target: { value: 'і\u0308' } });
+  await user.tab();
+  await user.keyboard('{Enter}');
+  expect(screen.getByRole('textbox')).toHaveValue('');
+  expect(screen.getByRole('textbox')).toHaveFocus();
 });

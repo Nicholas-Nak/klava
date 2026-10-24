@@ -6,7 +6,13 @@ import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router';
 import { HistoryPage } from '../pages/HistoryPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { useSettingsStore } from '../stores/settingsStore';
-import { useEffect, useLayoutEffect, useReducer, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { ModeControls } from '../components/ModeControls';
 import { Results } from '../components/Results';
 import { TextControls } from '../components/TextControls';
@@ -55,6 +61,13 @@ export function App() {
   );
   const [focused, setFocused] = useState(false);
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
+  const typingInput = useRef<HTMLInputElement>(null);
+  const focusAfterReset = useRef(false);
+  useLayoutEffect(() => {
+    if (!focusAfterReset.current) return;
+    focusAfterReset.current = false;
+    typingInput.current?.focus({ preventScroll: true });
+  }, [sessionId]);
   const addEntry = useHistoryStore((state) => state.addEntry);
   const [test, dispatch] = useReducer(testReducer, undefined, () =>
     createTest(
@@ -251,6 +264,7 @@ export function App() {
                     )}
                     <TestStatus test={test} />
                     <TypingArea
+                      inputRef={typingInput}
                       test={test}
                       language={options.language}
                       focused={focused}
@@ -277,7 +291,10 @@ export function App() {
                   <button
                     className={styles.refreshButton}
                     type="button"
-                    onClick={() => resetTest()}
+                    onClick={(event) => {
+                      focusAfterReset.current = event.detail === 0;
+                      resetTest();
+                    }}
                   >
                     <svg
                       width="18"
