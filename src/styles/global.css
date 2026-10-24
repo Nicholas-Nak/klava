@@ -47,3 +47,15 @@ input,
 select {
   font: inherit;
 }
+
+@media (forced-colors: active) {
+  :root,
+  :root[data-theme='dark'] {
+    --paper: Canvas;
+    --ink: CanvasText;
+    --muted: CanvasText;
+    --line: GrayText;
+    --accent: Highlight;
+    --accent-soft: Canvas;
+  }
+}

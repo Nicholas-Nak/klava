@@ -63,3 +63,10 @@
     max-height: 3.6em;
   }
 }
+
+@media (forced-colors: active) {
+  .caret {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}

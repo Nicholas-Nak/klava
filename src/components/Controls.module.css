@@ -81,3 +81,12 @@
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
+
+@media (forced-colors: active) {
+  .choice:has(input:checked) {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+    forced-color-adjust: none;
+  }
+}
