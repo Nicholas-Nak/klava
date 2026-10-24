@@ -87,27 +87,27 @@ export function App() {
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
   const result = test.phase === 'finished' ? getTestResult(test) : null;
   const location = useLocation();
-  const previousPath = useRef(location.pathname);
+  const routePath = location.pathname.replace(/\/+$/, '') || '/';
+  const previousPath = useRef(routePath);
   useEffect(() => {
     document.title =
-      location.pathname === '/history'
+      routePath === '/history'
         ? 'Історія — Klava'
-        : location.pathname === '/settings'
+        : routePath === '/settings'
           ? 'Налаштування — Klava'
           : test.phase === 'finished'
             ? 'Результат — Klava'
             : 'Klava — тренажер друку';
     if (
-      previousPath.current !== location.pathname &&
-      location.pathname === '/' &&
+      previousPath.current !== routePath &&
+      routePath === '/' &&
       test.phase !== 'finished'
     ) {
       mainContent.current?.focus();
     }
-    previousPath.current = location.pathname;
-  }, [location.pathname, test.phase]);
-  const focusMode =
-    location.pathname === '/' && test.phase === 'running' && focused;
+    previousPath.current = routePath;
+  }, [routePath, test.phase]);
+  const focusMode = routePath === '/' && test.phase === 'running' && focused;
 
   useEffect(() => {
     if (test.phase !== 'running') return;
@@ -185,7 +185,7 @@ export function App() {
     });
   }
 
-  useEscapeReset(location.pathname === '/', () => resetTest());
+  useEscapeReset(routePath === '/', () => resetTest());
 
   function updatePractice(nextPractice: PracticeMode) {
     setPractice(nextPractice);
@@ -220,7 +220,7 @@ export function App() {
     <div
       className={[
         styles.app,
-        location.pathname === '/' && focused && !result ? styles.typing : '',
+        routePath === '/' && focused && !result ? styles.typing : '',
       ].join(' ')}
     >
       <a
@@ -254,7 +254,7 @@ export function App() {
         tabIndex={-1}
         className={[
           styles.workspace,
-          result || location.pathname !== '/' ? styles.resultWorkspace : '',
+          result || routePath !== '/' ? styles.resultWorkspace : '',
         ].join(' ')}
       >
         <Routes>

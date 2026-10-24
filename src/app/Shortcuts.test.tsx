@@ -224,3 +224,16 @@ it('keeps the current page context when a countdown finishes elsewhere', async (
   expect(document.title).toBe('Результат — Klava');
   expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
 });
+
+it.each([
+  ['/settings/', 'Налаштування'],
+  ['/history/', 'Історія'],
+])('preserves page context for a trailing slash in %s', (path, title) => {
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <App />
+    </MemoryRouter>,
+  );
+  expect(screen.getByRole('heading', { name: title })).toHaveFocus();
+  expect(document.title).toBe(`${title} — Klava`);
+});
