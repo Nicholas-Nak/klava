@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { getCharacters } from '../domain/characters';
 import styles from './Word.module.css';
 
@@ -8,7 +9,7 @@ interface WordProps {
   cursor?: number | null;
 }
 
-export function Word({
+export const Word = memo(function Word({
   text,
   input = '',
   submitted = false,
@@ -35,4 +36,4 @@ export function Word({
       })}
     </span>
   );
-}
+});
