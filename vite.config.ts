@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   base: '/klava/',
   plugins: [react()],
+  build: { assetsInlineLimit: 0 },
   test: {
     pool: 'threads',
     environment: 'jsdom',
