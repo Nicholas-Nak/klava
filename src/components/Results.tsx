@@ -1,3 +1,4 @@
+import { ChartBoundary } from './ChartBoundary';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import type { TestResult } from '../domain/results';
 import type { PracticeMode, TestOptions } from '../types';
@@ -117,15 +118,17 @@ export function Results({
           </dd>
         </div>
       </dl>
-      <Suspense
-        fallback={
-          <div className={styles.chartLoading} role="status">
-            Завантаження графіка…
-          </div>
-        }
-      >
-        <SpeedChart samples={result.samples} />
-      </Suspense>
+      <ChartBoundary>
+        <Suspense
+          fallback={
+            <div className={styles.chartLoading} role="status">
+              Завантаження графіка…
+            </div>
+          }
+        >
+          <SpeedChart samples={result.samples} />
+        </Suspense>
+      </ChartBoundary>
       <section className={styles.breakdown} aria-label="Символи та виправлення">
         <h3>Символи та виправлення</h3>
         <dl>

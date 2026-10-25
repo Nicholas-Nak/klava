@@ -1,0 +1,28 @@
+.error {
+  margin-block: 32px;
+  padding-block: 24px;
+  border-block: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.error p {
+  margin: 0 0 16px;
+}
+
+.error button {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.error button:hover {
+  border-color: var(--accent);
+}
+
+.error button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

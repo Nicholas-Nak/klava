@@ -1,3 +1,4 @@
+import { ChartBoundary } from '../components/ChartBoundary';
 import { KeyboardHeatmap } from '../components/KeyboardHeatmap';
 import { mergeMistakeProfiles } from '../domain/mistakeHistory';
 import { PersonalBests } from '../components/PersonalBests';
@@ -67,11 +68,13 @@ export const HistoryPage = memo(function HistoryPage({
         entries={bests.filter((entry) => entry.options.language === language)}
       />
       {days.length > 0 && (
-        <Suspense
-          fallback={<p className={styles.note}>Завантаження графіка…</p>}
-        >
-          <ProgressChart days={days} />
-        </Suspense>
+        <ChartBoundary>
+          <Suspense
+            fallback={<p className={styles.note}>Завантаження графіка…</p>}
+          >
+            <ProgressChart days={days} />
+          </Suspense>
+        </ChartBoundary>
       )}
       {filtered.length > 0 && (
         <KeyboardHeatmap
