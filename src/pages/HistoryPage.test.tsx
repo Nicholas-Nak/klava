@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { createHistoryEntry } from '../domain/history';
@@ -86,4 +86,23 @@ it('reports unavailable persistence without hiding in-memory results', () => {
     'Не вдалося зберегти історію',
   );
   expect(screen.getAllByRole('row')).toHaveLength(2);
+});
+
+it('shows a new result while keeping the selected language', async () => {
+  render(<HistoryPage initialLanguage="uk" />);
+  await userEvent.selectOptions(
+    screen.getByRole('combobox', { name: 'Мова' }),
+    'en',
+  );
+  act(() => useHistoryStore.getState().addEntry(entry('new-uk', 'uk')));
+  expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+  act(() => useHistoryStore.getState().addEntry(entry('new-en', 'en')));
+  expect(screen.getByRole('combobox', { name: 'Мова' })).toHaveValue('en');
+  expect(screen.getByText('English · 15 с')).toBeInTheDocument();
+  expect(screen.queryByText('Українська · 15 с')).not.toBeInTheDocument();
+  expect(screen.getAllByRole('row')).toHaveLength(2);
+  expect(
+    await screen.findByRole('figure', { name: 'Прогрес за днями' }),
+  ).toBeInTheDocument();
 });

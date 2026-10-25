@@ -1,7 +1,7 @@
 import { KeyboardHeatmap } from '../components/KeyboardHeatmap';
 import { mergeMistakeProfiles } from '../domain/mistakeHistory';
 import { PersonalBests } from '../components/PersonalBests';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useEffect, useRef, useState } from 'react';
 import { getDailyProgress } from '../domain/progress';
 import { HistoryTable } from '../components/HistoryTable';
 import { useHistoryStore } from '../stores/historyStore';
@@ -14,7 +14,7 @@ const ProgressChart = lazy(() =>
   })),
 );
 
-export function HistoryPage({
+export const HistoryPage = memo(function HistoryPage({
   initialLanguage,
 }: {
   initialLanguage: Language;
@@ -84,4 +84,4 @@ export function HistoryPage({
       <HistoryTable entries={filtered} />
     </section>
   );
-}
+});
