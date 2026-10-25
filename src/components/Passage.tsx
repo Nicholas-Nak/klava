@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useRef } from 'react';
+import { Fragment, memo, useLayoutEffect, useRef } from 'react';
 import type { Language } from '../types';
 import { Word } from './Word';
 import styles from './Passage.module.css';
@@ -12,7 +12,7 @@ interface PassageProps {
   idle?: boolean;
 }
 
-export function Passage({
+export const Passage = memo(function Passage({
   words,
   language,
   completed = [],
@@ -112,4 +112,4 @@ export function Passage({
       </p>
     </div>
   );
-}
+});
