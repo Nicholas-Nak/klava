@@ -44,7 +44,7 @@ export function calculateWpm(characters: number, elapsedMs: number): number {
   return Math.round((characters / 5) * (60000 / elapsedMs));
 }
 
-function countSpaces(test: TestState): number {
+function countSpaces(test: Pick<TestState, 'mode' | 'completed'>): number {
   return test.mode.type === 'words' && test.completed.length === test.mode.count
     ? Math.max(0, test.completed.length - 1)
     : test.completed.length;
@@ -64,7 +64,9 @@ function countWordCharacters(word: string, input: string): number {
   ).length;
 }
 
-export function countCorrectCharacters(test: TestState): number {
+export function countCorrectCharacters(
+  test: Pick<TestState, 'words' | 'mode' | 'input' | 'completed'>,
+): number {
   let correct = 0;
   for (const [index, input] of test.completed.entries()) {
     correct += countWordCharacters(test.words[index] ?? '', input);
