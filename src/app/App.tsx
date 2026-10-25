@@ -9,6 +9,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import {
   useEffect,
   useLayoutEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -85,7 +86,10 @@ export function App() {
   );
   const selectedMode: TestMode =
     mode === 'words' ? { type: 'words', count } : { type: 'time', seconds };
-  const result = test.phase === 'finished' ? getTestResult(test) : null;
+  const result = useMemo(
+    () => (test.phase === 'finished' ? getTestResult(test) : null),
+    [test],
+  );
   const location = useLocation();
   const routePath = location.pathname.replace(/\/+$/, '') || '/';
   const previousPath = useRef(routePath);

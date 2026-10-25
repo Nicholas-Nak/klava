@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import * as textGenerator from '../domain/text';
 import { useSettingsStore } from '../stores/settingsStore';
 import { DEFAULT_SETTINGS, loadSettings } from '../stores/settingsStorage';
 import { useHistoryStore } from '../stores/historyStore';
@@ -22,6 +23,8 @@ beforeEach(() => {
   });
   useHistoryStore.setState({ entries: [], bests: [], storageAvailable: true });
 });
+
+afterEach(() => vi.useRealTimers());
 
 it('changes the document theme and keeps it when returning to practice', async () => {
   const user = userEvent.setup();
@@ -218,4 +221,35 @@ it('updates the mobile browser color together with the selected theme', async ()
   } finally {
     meta.remove();
   }
+});
+
+it('preserves a completed result when display settings change', async () => {
+  vi.spyOn(textGenerator, 'generateText').mockImplementation((count) =>
+    Array<string>(count).fill('кіт'),
+  );
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'performance'] });
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>,
+  );
+  await user.click(screen.getByRole('radio', { name: 'Час' }));
+  await user.click(screen.getByRole('radio', { name: '15 с' }));
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'кіт' } });
+  act(() => vi.advanceTimersByTime(15000));
+  await screen.findByRole('figure', { name: 'Швидкість за секундами' });
+  const saved = useHistoryStore.getState().entries[0];
+
+  await user.click(screen.getByRole('link', { name: 'Налаштування' }));
+  await user.click(screen.getByRole('radio', { name: 'Темна' }));
+  await user.click(screen.getByRole('radio', { name: 'Великий' }));
+  await user.click(screen.getByRole('link', { name: 'Тренування' }));
+
+  expect(screen.getByRole('heading', { name: 'Тест завершено' })).toHaveFocus();
+  expect(screen.getByRole('status', { name: 'WPM' })).toHaveTextContent('2');
+  expect(screen.getByRole('status', { name: 'Тривалість' })).toHaveTextContent(
+    '15 с',
+  );
+  expect(useHistoryStore.getState().entries).toEqual([saved]);
 });
