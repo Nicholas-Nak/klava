@@ -6,6 +6,10 @@ A typing speed trainer for Ukrainian and English, built with React and TypeScrip
 
 ![Typing test in Ukrainian, light theme](docs/screenshots/training.jpg)
 
+| Test results                                                                                  | Weak spots practice                                                                                  |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ![Test results: WPM, accuracy and a chart with an error marker](docs/screenshots/results.jpg) | ![Weak spots mode with letters, letter pairs and words to practise](docs/screenshots/weak-spots.jpg) |
+
 ## Features
 
 - Timed tests (15, 30, 60, 120 s) and word-count tests (10, 25, 50, 100 words).
@@ -22,13 +26,13 @@ The control panel hides while you type. On mobile, input goes through a regular 
 
 The project has **35 test files** written with **Vitest** and **React Testing Library**. Tests sit next to the code they check (`metrics.ts` → `metrics.test.ts`) and cover every layer of the app:
 
-| Layer | Folder | Test files | What is checked |
-| --- | --- | --- | --- |
-| Domain logic | `src/domain/` | 14 | WPM, accuracy and consistency formulas, mistake classification, test reducer, records, history, weak-spot selection and text generation |
-| UI components | `src/components/` | 10 | Typing area, passage and word highlighting, results, charts, heatmap, history table, chart error boundary |
-| State and storage | `src/stores/` | 4 | Zustand stores and validation of data restored from `localStorage` |
-| App flows | `src/app/`, `src/pages/` | 6 | Full user flows: typing a test, settings, keyboard shortcuts, adaptive mode, history page, chart loading failures |
-| Data | `src/data/` | 1 | Word list integrity |
+| Layer             | Folder                   | Test files | What is checked                                                                                                                         |
+| ----------------- | ------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain logic      | `src/domain/`            | 14         | WPM, accuracy and consistency formulas, mistake classification, test reducer, records, history, weak-spot selection and text generation |
+| UI components     | `src/components/`        | 10         | Typing area, passage and word highlighting, results, charts, heatmap, history table, chart error boundary                               |
+| State and storage | `src/stores/`            | 4          | Zustand stores and validation of data restored from `localStorage`                                                                      |
+| App flows         | `src/app/`, `src/pages/` | 6          | Full user flows: typing a test, settings, keyboard shortcuts, adaptive mode, history page, chart loading failures                       |
+| Data              | `src/data/`              | 1          | Word list integrity                                                                                                                     |
 
 Pure calculation logic lives in `src/domain` with no React dependencies, so most of it is covered by fast, deterministic unit tests. Component and app-level tests use `user-event` to simulate real typing and keyboard navigation.
 
@@ -46,12 +50,12 @@ A [GitHub Actions workflow](.github/workflows/deploy.yml) runs `npm run check` (
 
 Click the text and start typing. The timer starts on the first character.
 
-| Keys | Action |
-| --- | --- |
-| Space or Enter | Next word |
-| Backspace | Fix the current word |
-| Tab, then Enter | Start a new test |
-| Esc | Reset the test |
+| Keys            | Action               |
+| --------------- | -------------------- |
+| Space or Enter  | Next word            |
+| Backspace       | Fix the current word |
+| Tab, then Enter | Start a new test     |
+| Esc             | Reset the test       |
 
 On charts, the left and right arrow keys show point details. The same values are available in tables below the charts.
 
@@ -63,12 +67,12 @@ The generator favours words containing those combinations and mixes in regular w
 
 ## Metrics
 
-| Metric | How it is calculated |
-| --- | --- |
-| WPM | Correct characters remaining in the text, divided by 5 and by the time in minutes. Spaces count. |
-| Raw WPM | The same formula for all remaining characters, including incorrect and extra ones. |
-| Accuracy | Share of correct keystrokes. Corrected mistakes and skipped characters when moving to the next word also count. |
-| Consistency | How even the typing pace is across full seconds, including pauses. Needs at least two seconds. |
+| Metric      | How it is calculated                                                                                            |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| WPM         | Correct characters remaining in the text, divided by 5 and by the time in minutes. Spaces count.                |
+| Raw WPM     | The same formula for all remaining characters, including incorrect and extra ones.                              |
+| Accuracy    | Share of correct keystrokes. Corrected mistakes and skipped characters when moving to the next word also count. |
+| Consistency | How even the typing pace is across full seconds, including pauses. Needs at least two seconds.                  |
 
 The chart shows average speed from the start of the test. Error markers refer to a single second. Deleted characters are shown separately and are not added to raw WPM.
 
@@ -77,15 +81,6 @@ The chart shows average speed from the start of the test. Error markers refer to
 Settings and the last 200 results are stored in this browser's `localStorage`. Personal records are stored separately, so they remain after old tests leave the history. Language, mode, duration or word count, punctuation, numbers and practice type each have their own records.
 
 There is no sync between devices. Clearing site data removes history and settings.
-
-<details>
-<summary>Test results and adaptive practice</summary>
-
-![Test results: WPM, accuracy and a chart with an error marker](docs/screenshots/results.jpg)
-
-![Weak spots mode with letters, letter pairs and words to practise](docs/screenshots/weak-spots.jpg)
-
-</details>
 
 ## Getting started
 
