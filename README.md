@@ -1,97 +1,119 @@
 # Klava
 
-Тренажер швидкості друку українською та англійською.
+A typing speed trainer for Ukrainian and English, built with React and TypeScript.
 
-[Відкрити Klava](https://nicholas-nak.github.io/klava/)
+[**Live demo →**](https://nicholas-nak.github.io/klava/)
 
-![Тренування українською у світлій темі](docs/screenshots/training.jpg)
+![Typing test in Ukrainian, light theme](docs/screenshots/training.jpg)
 
-## Можливості
+## Features
 
-- Тести на 15, 30, 60 або 120 секунд і на 10, 25, 50 або 100 слів.
-- Українська й англійська мови, пунктуація та цифри.
-- Підсвітка правильних, помилкових і зайвих символів; живий WPM і таймер.
-- WPM, raw WPM, точність, стабільність і графік швидкості з позначками помилок.
-- Історія, прогрес за днями й особисті рекорди для кожного набору параметрів.
-- Теплова карта української та англійської розкладок і тренування «Слабкі місця».
-- Світла й темна теми, три розміри тексту та режим при відкритті.
+- Timed tests (15, 30, 60, 120 s) and word-count tests (10, 25, 50, 100 words).
+- Ukrainian and English word lists, optional punctuation and numbers.
+- Live highlighting of correct, incorrect and extra characters; live WPM and timer.
+- Results: WPM, raw WPM, accuracy, consistency and a speed chart with error markers.
+- History, daily progress and personal records for every combination of test settings.
+- Keyboard error heatmap for both layouts and an adaptive **Weak spots** practice mode.
+- Light and dark themes, three text sizes and a configurable default mode.
 
-Під час друку панель керування ховається. На телефоні введення працює через звичайне поле `input`, яке відкриває екранну клавіатуру. Апострофи `'` і `’` рівнозначні; ґ, є, ї та і — окремі літери.
+The control panel hides while you type. On mobile, input goes through a regular `input` field so the on-screen keyboard opens. The apostrophes `'` and `’` are treated as equal; ґ, є, ї and і are separate letters.
 
-## Керування
+## Testing
 
-Натисніть на текст і почніть друкувати. Таймер запускається з першого символу.
+The project has **35 test files** written with **Vitest** and **React Testing Library**. Tests sit next to the code they check (`metrics.ts` → `metrics.test.ts`) and cover every layer of the app:
 
-| Клавіші          | Дія                         |
-| ---------------- | --------------------------- |
-| Пробіл або Enter | Перейти до наступного слова |
-| Backspace        | Виправити поточне слово     |
-| Tab, потім Enter | Почати новий тест           |
-| Esc              | Скинути тест                |
+| Layer | Folder | Test files | What is checked |
+| --- | --- | --- | --- |
+| Domain logic | `src/domain/` | 14 | WPM, accuracy and consistency formulas, mistake classification, test reducer, records, history, weak-spot selection and text generation |
+| UI components | `src/components/` | 10 | Typing area, passage and word highlighting, results, charts, heatmap, history table, chart error boundary |
+| State and storage | `src/stores/` | 4 | Zustand stores and validation of data restored from `localStorage` |
+| App flows | `src/app/`, `src/pages/` | 6 | Full user flows: typing a test, settings, keyboard shortcuts, adaptive mode, history page, chart loading failures |
+| Data | `src/data/` | 1 | Word list integrity |
 
-На графіках стрілки ліворуч і праворуч показують деталі точки. Ті самі значення доступні в таблицях під графіками.
+Pure calculation logic lives in `src/domain` with no React dependencies, so most of it is covered by fast, deterministic unit tests. Component and app-level tests use `user-event` to simulate real typing and keyboard navigation.
 
-## Слабкі місця
+```sh
+npm test             # run all tests once
+npm run test:watch   # re-run tests on file changes
+npm run check        # lint + format check + tests + production build
+```
 
-Режим аналізує останні 30 тестів обраної мови: помилки в літерах, парах літер і словах, включно з виправленими. Перед початком видно, що саме тренуватиметься.
+### Continuous integration
 
-Генератор частіше обирає слова з цими комбінаціями й додає звичайні слова для різноманітності. Якщо історії помилок ще немає, використовується звичайний список. Вибір слів — чиста функція з окремими тестами.
+A [GitHub Actions workflow](.github/workflows/deploy.yml) runs `npm run check` (ESLint, Prettier, Vitest and the TypeScript build) on every push and pull request to `main`. The site is deployed to GitHub Pages only when all checks pass.
 
-## Показники
+## Controls
 
-| Показник     | Як рахується                                                                                           |
-| ------------ | ------------------------------------------------------------------------------------------------------ |
-| WPM          | Правильні символи, що залишилися в тексті, поділені на 5 і на час у хвилинах. Пробіли враховуються.    |
-| Raw WPM      | Та сама формула для всіх символів, що залишилися, включно з помилковими й зайвими.                     |
-| Точність     | Частка правильних спроб. Виправлені помилки та пропуски при переході між словами теж враховуються.     |
-| Стабільність | Рівномірність темпу введення за повними секундами, включно з паузами. Потрібно щонайменше дві секунди. |
+Click the text and start typing. The timer starts on the first character.
 
-Графік показує середню швидкість від початку тесту. Позначки помилок стосуються окремої секунди. Видалені символи показуються окремо й не додаються до raw WPM.
+| Keys | Action |
+| --- | --- |
+| Space or Enter | Next word |
+| Backspace | Fix the current word |
+| Tab, then Enter | Start a new test |
+| Esc | Reset the test |
 
-## Збереження даних
+On charts, the left and right arrow keys show point details. The same values are available in tables below the charts.
 
-Налаштування та останні 200 результатів зберігаються в `localStorage` цього браузера. Особисті рекорди зберігаються окремо, тому залишаються після виходу старого тесту з історії. Мова, режим, тривалість або кількість слів, пунктуація, цифри та тип тренування мають окремі рекорди.
+## Weak spots
 
-Синхронізації між пристроями немає. Очищення даних сайту видаляє історію й налаштування.
+This mode analyses the last 30 tests in the selected language: mistakes in letters, letter pairs and words, including corrected ones. Before the test starts, it shows exactly what will be practised.
+
+The generator favours words containing those combinations and mixes in regular words for variety. If there is no mistake history yet, the regular word list is used. Word selection is a pure function with its own tests.
+
+## Metrics
+
+| Metric | How it is calculated |
+| --- | --- |
+| WPM | Correct characters remaining in the text, divided by 5 and by the time in minutes. Spaces count. |
+| Raw WPM | The same formula for all remaining characters, including incorrect and extra ones. |
+| Accuracy | Share of correct keystrokes. Corrected mistakes and skipped characters when moving to the next word also count. |
+| Consistency | How even the typing pace is across full seconds, including pauses. Needs at least two seconds. |
+
+The chart shows average speed from the start of the test. Error markers refer to a single second. Deleted characters are shown separately and are not added to raw WPM.
+
+## Data storage
+
+Settings and the last 200 results are stored in this browser's `localStorage`. Personal records are stored separately, so they remain after old tests leave the history. Language, mode, duration or word count, punctuation, numbers and practice type each have their own records.
+
+There is no sync between devices. Clearing site data removes history and settings.
 
 <details>
-<summary>Результат тесту й адаптивне тренування</summary>
+<summary>Test results and adaptive practice</summary>
 
-![Результат тесту: WPM, точність і графік з позначкою помилки](docs/screenshots/results.jpg)
+![Test results: WPM, accuracy and a chart with an error marker](docs/screenshots/results.jpg)
 
-![Режим «Слабкі місця» з літерами, парами літер і словами для тренування](docs/screenshots/weak-spots.jpg)
+![Weak spots mode with letters, letter pairs and words to practise](docs/screenshots/weak-spots.jpg)
 
 </details>
 
-## Запуск
+## Getting started
 
-Потрібні Node.js 24 і npm.
+Requires Node.js 24 and npm.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Відкрийте [127.0.0.1:5173/klava/](http://127.0.0.1:5173/klava/).
+Open [127.0.0.1:5173/klava/](http://127.0.0.1:5173/klava/).
 
 ```sh
-npm run check       # перевірка коду, форматування, тести та збірка
-npm run test:watch  # тести під час розробки
-npm run preview    # перегляд зібраної версії
+npm run build     # production build
+npm run preview   # preview the build at 127.0.0.1:4173/klava/
 ```
 
-Для окремої збірки: `npm run build`. Перегляд збірки доступний за адресою [127.0.0.1:4173/klava/](http://127.0.0.1:4173/klava/).
+## Tech stack
 
-## Стек
+- **App:** Vite, React, TypeScript (strict mode), React Router, CSS Modules
+- **State:** `useReducer` for the running test, Zustand for settings and history
+- **Charts:** Recharts
+- **Quality:** Vitest, React Testing Library, ESLint, Prettier, GitHub Actions
 
-Vite, React, TypeScript у strict-режимі, React Router і CSS Modules. Стан тесту керується через `useReducer`, налаштування та історія — через Zustand. Графіки побудовані на Recharts. Тести: Vitest і React Testing Library; перевірка стилю коду: ESLint і Prettier.
+Text generation, the test reducer and metric calculations are in `src/domain`. Custom lists of common words are in [`src/data/uk.json`](src/data/uk.json) and [`src/data/en.json`](src/data/en.json), with over 1000 words each.
 
-Генерація тексту, reducer і розрахунок показників розташовані в `src/domain`. Власні списки поширених слів — у [`src/data/uk.json`](src/data/uk.json) і [`src/data/en.json`](src/data/en.json), понад 1000 слів у кожному.
+Fonts: [JetBrains Mono](public/licenses/jetbrains-mono.txt) for test text and [Unbounded](public/licenses/unbounded.txt) for headings. Both are bundled with the app.
 
-Шрифти: [JetBrains Mono](public/licenses/jetbrains-mono.txt) для тексту тесту та [Unbounded](public/licenses/unbounded.txt) для заголовків. Обидва постачаються із застосунком.
+## Deployment
 
-## Публікація
-
-[GitHub Actions](.github/workflows/deploy.yml) перевіряє кожен push у `main` і pull request. Успішна перевірка `main` публікує збірку на GitHub Pages.
-
-У налаштуваннях Pages обрано **GitHub Actions**. Застосунок використовує `HashRouter` і `base: '/klava/'` у `vite.config.ts`; для іншої назви репозиторію потрібно змінити `base`.
+The app uses `HashRouter` and `base: '/klava/'` in `vite.config.ts`. If you rename the repository, update `base`. In the repository's Pages settings, the source is set to **GitHub Actions**.
